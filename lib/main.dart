@@ -1,4 +1,4 @@
-import 'package:expenz/screens/onboarding_screen.dart';
+import 'package:expenz/screens/onboarding/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       title: 'Expenz',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: "Inter"),
-      home: OnboardingScreen(),
+      home: const SplashScreen(),
     );
   }
 }

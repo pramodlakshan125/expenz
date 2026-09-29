@@ -5,15 +5,17 @@ class FrontPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset("assets/images/logo.png", width: 100, height: 100),
-        const Text(
-          "Expenz",
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset("assets/images/logo.png", width: 100, height: 100),
+          const Text(
+            "Expenz",
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 }
