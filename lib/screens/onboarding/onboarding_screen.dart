@@ -112,6 +112,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                   ),
                 ),
+                //Skip button
+                if (!showDetailsPage)
+                  Positioned(
+                    top: 70,
+                    right: 20,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UserLoginScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Skip",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

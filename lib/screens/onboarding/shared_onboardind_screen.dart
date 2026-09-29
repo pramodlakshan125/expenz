@@ -33,16 +33,19 @@ class SharedOnboardindScreen extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            fontSize: 24,
+            fontSize: 26,
             color: AppColors.textPrimary,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 20),
-        Text(
-          description,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            description,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+          ),
         ),
       ],
     );
