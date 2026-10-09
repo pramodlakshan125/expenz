@@ -4,6 +4,7 @@ import 'package:expenz/constant/colors.dart';
 import 'package:expenz/screens/add_new_page.dart';
 import 'package:expenz/screens/analytics_screen.dart';
 import 'package:expenz/screens/home_screen.dart';
+import 'package:expenz/screens/goals_page.dart';
 import 'package:expenz/screens/profile.dart';
 import 'package:expenz/screens/transaction_page.dart';
 import 'package:expenz/widgets/costom_nav_bar.dart';
@@ -56,6 +57,11 @@ class _MainScreenState extends State<MainScreen> {
                   onAddExpense: () => _add(),
                   onAddIncome: () => _add(TransactionType.income),
                   onSeeAll: () => setState(() => _currentIndex = 1),
+                  onInsights: () => setState(() => _currentIndex = 2),
+                  onGoals: () => Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(builder: (_) => const GoalsPage()),
+                  ),
                 ),
           TransactionPage(
             transactions: transactions,

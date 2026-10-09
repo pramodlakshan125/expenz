@@ -8,6 +8,8 @@ class QuickActionsRow extends StatelessWidget {
   final VoidCallback? onAddIncome;
   final VoidCallback? onBills;
   final VoidCallback? onSavings;
+  final VoidCallback? onGoals;
+  final VoidCallback? onInsights;
 
   const QuickActionsRow({
     super.key,
@@ -15,6 +17,8 @@ class QuickActionsRow extends StatelessWidget {
     this.onAddIncome,
     this.onBills,
     this.onSavings,
+    this.onGoals,
+    this.onInsights,
   });
 
   @override
@@ -45,15 +49,15 @@ class QuickActionsRow extends StatelessWidget {
               onTap: onAddIncome,
             ),
             QuickActionItem(
-              icon: AppIcons.bills,
+              icon: Icons.bar_chart_rounded,
               color: const Color(0xFF3C4C52),
-              label: 'Bills',
-              onTap: onBills,
+              label: 'Insights',
+              onTap: onInsights,
             ),
             QuickActionItem(
-              icon: AppIcons.money,
-              label: 'Savings',
-              onTap: onSavings,
+              icon: Icons.flag_rounded,
+              label: 'Goals',
+              onTap: onGoals,
             ),
           ],
         ),

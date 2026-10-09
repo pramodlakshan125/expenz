@@ -11,7 +11,7 @@ class RecentTransactions extends StatelessWidget {
   const RecentTransactions({
     super.key,
     required this.transactions,
-    this.maxItems = 5,
+    this.maxItems = 4,
     this.onSeeAll,
   });
 
@@ -35,10 +35,10 @@ class RecentTransactions extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            GestureDetector(
-              onTap: onSeeAll,
+            TextButton(
+              onPressed: onSeeAll,
               child: const Text(
-                'See All',
+                'See more',
                 style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 13,

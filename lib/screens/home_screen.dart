@@ -1,4 +1,5 @@
 import 'package:expenz/constant/colors.dart';
+import 'package:expenz/screens/goals_page.dart';
 import 'package:expenz/models/transaction_model.dart';
 import 'package:expenz/widgets/home/balance_card.dart';
 import 'package:expenz/widgets/home/home_header.dart';
@@ -13,12 +14,16 @@ class HomeScreen extends StatelessWidget {
   final VoidCallback? onAddExpense;
   final VoidCallback? onAddIncome;
   final VoidCallback? onSeeAll;
+  final VoidCallback? onGoals;
+  final VoidCallback? onInsights;
   const HomeScreen({
     super.key,
     this.transactions = const [],
     this.onAddExpense,
     this.onAddIncome,
     this.onSeeAll,
+    this.onGoals,
+    this.onInsights,
   });
 
   @override
@@ -50,11 +55,19 @@ class HomeScreen extends StatelessWidget {
             QuickActionsRow(
               onAddExpense: onAddExpense,
               onAddIncome: onAddIncome,
+              onGoals: onGoals,
+              onInsights: onInsights,
             ),
             const SizedBox(height: 24),
 
             // Recent saved transactions
-            RecentTransactions(transactions: transactions, onSeeAll: onSeeAll),
+            RecentTransactions(
+              transactions: transactions,
+              maxItems: 4,
+              onSeeAll: onSeeAll,
+            ),
+            const SizedBox(height: 24),
+            GoalsSection(preview: true, onSeeMore: onGoals),
           ],
         ),
       ),
