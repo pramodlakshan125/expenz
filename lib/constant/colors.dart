@@ -4,14 +4,10 @@ class AppColors {
   // Prevent instantiation
   AppColors._();
 
-  // ---------------------------------------------------------------------------
-  // 1. Primary & Brand Colors
-  // ---------------------------------------------------------------------------
   static const Color primary = Color(
     0xFF25A67D,
   ); // Deep Indigo Blue (Trust & Main Theme)
-  static const Color primaryLight = Color(0xFF818CF8); // Light Indigo
-  static const Color primaryDark = Color(0xFF3730A3); // Dark Indigo
+  // Dark Indigo
 
   // ---------------------------------------------------------------------------
   // 2. Financial Transaction Colors

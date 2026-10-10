@@ -1,7 +1,7 @@
+import 'package:expenz/auth/login.dart';
 import 'package:expenz/constant/colors.dart';
 import 'package:expenz/data/onboarding_data.dart';
 import 'package:expenz/screens/onboarding/shared_onboardind_screen.dart';
-import 'package:expenz/screens/user_login_screen.dart';
 import 'package:expenz/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -101,7 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => UserLoginScreen(),
+                                  builder: (context) => LogIn(),
                                 ),
                               );
                             },
@@ -121,9 +121,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => UserLoginScreen(),
-                          ),
+                          MaterialPageRoute(builder: (context) => LogIn()),
                         );
                       },
                       child: const Text(
