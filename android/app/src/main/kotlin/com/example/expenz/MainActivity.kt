@@ -1,4 +1,4 @@
-package com.example.expenz
+package com.expenz
 
 import io.flutter.embedding.android.FlutterActivity
 
