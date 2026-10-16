@@ -1,4 +1,6 @@
 import 'package:expenz/constant/colors.dart';
+import 'package:expenz/screens/home_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -33,6 +35,42 @@ class _LogInState extends State<LogIn> {
     mailcontroller.dispose();
     passwordcontroller.dispose();
     super.dispose();
+  }
+
+  Future<void> userLogin() async {
+    try {
+      // 1. Check the email and password with Firebase
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: mailcontroller.text.trim(),
+        password: passwordcontroller.text.trim(),
+      );
+
+      // 2. If correct, show a green message!
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.safeState,
+          content: Text("Logged In Successfully!"),
+        ),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } on FirebaseAuthException catch (e) {
+      // 4. If the email or password is wrong, show a red message
+      String message = "Login failed";
+      if (e.code == 'user-not-found') {
+        message = "No account found for this email";
+      } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        message = "Wrong email or password";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(backgroundColor: Colors.redAccent, content: Text(message)),
+      );
+    }
   }
 
   @override
@@ -216,6 +254,7 @@ class _LogInState extends State<LogIn> {
                   GestureDetector(
                     onTap: () {
                       if (_formkey.currentState!.validate()) {
+                        userLogin();
                         // Sign In Logic Here
                       }
                     },
