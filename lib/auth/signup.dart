@@ -1,4 +1,6 @@
 import 'package:expenz/constant/colors.dart';
+import 'package:expenz/screens/home_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -22,6 +24,42 @@ class _SignUpState extends State<SignUp> {
     mailcontroller.dispose();
     passwordcontroller.dispose();
     super.dispose();
+  }
+
+  // This function talks to Firebase to create the account
+  Future<void> registration() async {
+    try {
+      // 1. Send the email and password to Firebase
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: mailcontroller.text.trim(),
+        password: passwordcontroller.text.trim(),
+      );
+
+      // 2. Show a green pop-up message at the bottom when it works!
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.safeState,
+          content: Text("Registered Successfully!"),
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } on FirebaseAuthException catch (e) {
+      // 3. If something goes wrong (like a short password), show a red message
+      String message = "Something went wrong";
+      if (e.code == 'weak-password') {
+        message = "Password is too weak (use at least 6 characters)";
+      } else if (e.code == 'email-already-in-use') {
+        message = "This email is already registered";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(backgroundColor: Colors.redAccent, content: Text(message)),
+      );
+    }
   }
 
   @override
@@ -216,6 +254,7 @@ class _SignUpState extends State<SignUp> {
                   GestureDetector(
                     onTap: () {
                       if (_formkey.currentState!.validate()) {
+                        registration();
                         // Registration Action Here
                       }
                     },
