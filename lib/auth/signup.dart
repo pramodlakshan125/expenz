@@ -1,5 +1,5 @@
 import 'package:expenz/constant/colors.dart';
-import 'package:expenz/screens/home_page.dart';
+import 'package:expenz/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -45,7 +45,7 @@ class _SignUpState extends State<SignUp> {
       );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => const MainScreen()),
       );
     } on FirebaseAuthException catch (e) {
       // 3. If something goes wrong (like a short password), show a red message

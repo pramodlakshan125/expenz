@@ -1,6 +1,5 @@
 import 'package:expenz/auth/login.dart';
-import 'package:expenz/screens/home_page.dart';
-import 'package:expenz/screens/onboarding/splash_screen.dart';
+import 'package:expenz/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +26,7 @@ class MyApp extends StatelessWidget {
         builder: (context, snapshot) {
           // 1. If Firebase finds a saved user on the phone -> Go to Home Page!
           if (snapshot.hasData) {
-            return const HomePage();
+            return const MainScreen();
           }
 
           // 2. If NO user is saved -> Go to Login Page!
