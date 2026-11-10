@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:expenz/constant/app_icons.dart';
 import 'package:expenz/constant/colors.dart';
 import 'package:expenz/data/dummy_transactions.dart';
 import 'package:flutter/material.dart';
@@ -116,11 +117,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: _colors.first,
+                      color: AppIcons.categoryColor(_category!),
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: const Icon(
-                      Icons.receipt_long_rounded,
+                    child: Icon(
+                      AppIcons.category(_category!),
                       color: Colors.white,
                       size: 32,
                     ),
@@ -185,13 +186,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         .map(
                           (t) => ListTile(
                             contentPadding: EdgeInsets.zero,
-                            leading: const CircleAvatar(
-                              backgroundColor: Color(0xFFFBEEE2),
-                              child: Icon(
-                                Icons.receipt_long_rounded,
-                                color: Color(0xFFCA7029),
-                              ),
-                            ),
+                            leading: CategoryIcon(category: t.category),
                             title: Text(t.title),
                             subtitle: Text(
                               DateFormat('d MMM, HH:mm').format(t.date),
@@ -407,7 +402,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.lightbulb_outline,
+                          AppIcons.idea,
                           color: Color(0xFF9F7E00),
                           size: 30,
                         ),

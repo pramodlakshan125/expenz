@@ -1,4 +1,5 @@
 import 'package:expenz/constant/colors.dart';
+import 'package:expenz/constant/app_icons.dart';
 import 'package:expenz/widgets/home/quick_action_item.dart';
 import 'package:flutter/material.dart';
 
@@ -34,22 +35,23 @@ class QuickActionsRow extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             QuickActionItem(
-              icon: Icons.remove_circle_outline_rounded,
+              icon: AppIcons.plus,
               label: 'Add Expense',
               onTap: onAddExpense,
             ),
             QuickActionItem(
-              icon: Icons.add_circle_outline_rounded,
+              icon: AppIcons.income,
               label: 'Add Income',
               onTap: onAddIncome,
             ),
             QuickActionItem(
-              icon: Icons.receipt_long_outlined,
+              icon: AppIcons.bills,
+              color: const Color(0xFF3C4C52),
               label: 'Bills',
               onTap: onBills,
             ),
             QuickActionItem(
-              icon: Icons.savings_outlined,
+              icon: AppIcons.money,
               label: 'Savings',
               onTap: onSavings,
             ),

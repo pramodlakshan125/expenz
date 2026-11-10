@@ -1,4 +1,5 @@
 import 'package:expenz/constant/colors.dart';
+import 'package:expenz/constant/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -95,7 +96,7 @@ class _BalanceCardState extends State<BalanceCard> {
                 ),
                 child: const Center(
                   child: Icon(
-                    Icons.account_balance_wallet_outlined,
+                    AppIcons.wallet,
                     size: 21,
                     color: AppColors.primary,
                   ),
@@ -167,9 +168,7 @@ class _BalanceCardState extends State<BalanceCard> {
               GestureDetector(
                 onTap: () => setState(() => _isHidden = !_isHidden),
                 child: Icon(
-                  _isHidden
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
+                  _isHidden ? Icons.visibility_off_outlined : AppIcons.eye,
                   color: AppColors.textSecondary,
                   size: 22,
                 ),
@@ -254,7 +253,7 @@ class _BalanceCardState extends State<BalanceCard> {
               child: Row(
                 children: [
                   const Icon(
-                    Icons.warning_amber_rounded,
+                    AppIcons.warning,
                     size: 18,
                     color: AppColors.dangerState,
                   ),

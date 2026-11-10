@@ -5,12 +5,14 @@ class QuickActionItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
+  final Color color;
 
   const QuickActionItem({
     super.key,
     required this.icon,
     required this.label,
     this.onTap,
+    this.color = const Color(0xFF007F61),
   });
 
   @override
@@ -25,11 +27,10 @@ class QuickActionItem extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: AppColors.cardSurface,
+              color: color.withValues(alpha: 0.11),
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.divider),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 26),
+            child: Icon(icon, color: color, size: 26),
           ),
         ),
         const SizedBox(height: 8),

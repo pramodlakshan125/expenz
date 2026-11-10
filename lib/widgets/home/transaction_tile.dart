@@ -1,4 +1,5 @@
 import 'package:expenz/constant/colors.dart';
+import 'package:expenz/constant/app_icons.dart';
 import 'package:expenz/models/transaction_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,29 +9,6 @@ class TransactionTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   const TransactionTile({super.key, required this.transaction, this.onTap});
-
-  IconData _categoryIcon(String category) {
-    switch (category.toLowerCase()) {
-      case 'food & dining':
-      case 'food':
-        return Icons.restaurant_rounded;
-      case 'transport':
-        return Icons.directions_bus_rounded;
-      case 'bills & utilities':
-      case 'bills':
-        return Icons.receipt_long_rounded;
-      case 'shopping':
-        return Icons.shopping_bag_rounded;
-      case 'entertainment':
-        return Icons.movie_rounded;
-      case 'health':
-        return Icons.favorite_rounded;
-      case 'salary':
-        return Icons.payments_rounded;
-      default:
-        return Icons.category_rounded;
-    }
-  }
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
@@ -59,19 +37,7 @@ class TransactionTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _categoryIcon(transaction.category),
-                color: AppColors.primary,
-                size: 22,
-              ),
-            ),
+            CategoryIcon(category: transaction.category),
             const SizedBox(width: 14),
             Expanded(
               child: Column(

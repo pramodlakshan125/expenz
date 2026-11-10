@@ -1,4 +1,5 @@
 import 'package:expenz/constant/colors.dart';
+import 'package:expenz/constant/app_icons.dart';
 import 'package:flutter/material.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -63,14 +64,11 @@ class HomeHeader extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFFE2F0EB),
                   shape: BoxShape.circle,
                   border: Border.all(color: AppColors.divider),
                 ),
-                child: const Icon(
-                  Icons.notifications_none_rounded,
-                  color: AppColors.textPrimary,
-                ),
+                child: const Icon(AppIcons.bell, color: Color(0xFF007F61)),
               ),
               if (hasNotification)
                 Positioned(
