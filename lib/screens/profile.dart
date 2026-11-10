@@ -268,9 +268,6 @@ class _ProfileState extends State<Profile> {
                       activeTrackColor: _green,
                       onChanged: (value) {
                         setState(() => _notifications = value);
-                        _message(
-                          'Notification preview ${value ? 'enabled' : 'disabled'}. Device notifications are not connected yet.',
-                        );
                       },
                     ),
                   ),
