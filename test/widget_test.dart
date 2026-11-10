@@ -60,6 +60,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Food & Dining'), findsNothing);
     await tester.tap(find.text('Salary'));
+    await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(saved!.isIncome, isTrue);
@@ -76,6 +77,7 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Transport'));
+    await tester.pump();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Transaction saved'), findsNothing);
