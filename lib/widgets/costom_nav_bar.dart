@@ -1,7 +1,8 @@
 import 'package:expenz/constant/colors.dart';
 import 'package:flutter/material.dart';
 
-/// Dark bottom bar with a curved cut-out for the middle button.
+/// White bottom bar with rounded top corners and a curved cut-out
+/// for the middle button.
 /// It does NOT keep the selected tab itself. The screen that uses it
 /// gives [currentIndex] and listens to [onTap].
 class CustomBottomNav extends StatelessWidget {
@@ -17,9 +18,17 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      color: AppColors.darkBackground,
+      color: const Color.fromARGB(255, 255, 255, 255),
       surfaceTintColor: Colors.transparent,
-      shape: const CircularNotchedRectangle(),
+      elevation: 12,
+      shadowColor: Colors.black38,
+      clipBehavior: Clip.antiAlias,
+      shape: const AutomaticNotchedShape(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        CircleBorder(),
+      ),
       notchMargin: 8,
       padding: EdgeInsets.zero,
       child: SizedBox(
@@ -36,8 +45,8 @@ class CustomBottomNav extends StatelessWidget {
             ),
             Expanded(
               child: _NavItem(
-                icon: Icons.calendar_month_rounded,
-                label: 'Planner',
+                icon: Icons.receipt_long_rounded,
+                label: 'Transactions',
                 isActive: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
@@ -84,10 +93,15 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppColors.primary : Colors.white70;
+    final color = isActive
+        ? const Color.fromARGB(255, 0, 0, 0)
+        : AppColors.textSecondary;
 
     return InkWell(
       onTap: onTap,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

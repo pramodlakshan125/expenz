@@ -33,7 +33,9 @@ class AppColors {
   // ---------------------------------------------------------------------------
   // 4. Background & Surface Colors (Light Mode)
   // ---------------------------------------------------------------------------
-  static const Color background = Color(0xFFF8FAFC); // Soft Gray / Off-White
+  // static const Color background = Color(0xFFF8FAFC);
+  static const Color background = Color(0xFFF9FAFB);
+  // Soft Gray / Off-White
   static const Color cardSurface = Color(
     0xFFFFFFFF,
   ); // Pure White (Cards, Dialogs, Sheets)

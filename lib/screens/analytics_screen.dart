@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-class Analyze extends StatefulWidget {
-  const Analyze({super.key});
+class AnalyticsScreen extends StatefulWidget {
+  const AnalyticsScreen({super.key});
 
   @override
-  State<Analyze> createState() => _AnalyzeState();
+  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
 }
 
-class _AnalyzeState extends State<Analyze> {
+class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Text(
-          'Analyze Page',
+          'Analytics Page',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
