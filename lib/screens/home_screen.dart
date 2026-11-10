@@ -1,5 +1,5 @@
 import 'package:expenz/constant/colors.dart';
-import 'package:expenz/data/dummy_transactions.dart';
+import 'package:expenz/models/transaction_model.dart';
 import 'package:expenz/widgets/home/balance_card.dart';
 import 'package:expenz/widgets/home/home_header.dart';
 import 'package:expenz/widgets/home/quick_actions_row.dart';
@@ -9,12 +9,22 @@ import 'package:flutter/material.dart';
 /// The Home tab. It only places the pieces.
 /// Each piece lives in its own file in widgets/home/.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final List<TransactionModel> transactions;
+  final VoidCallback? onAddExpense;
+  final VoidCallback? onAddIncome;
+  final VoidCallback? onSeeAll;
+  const HomeScreen({
+    super.key,
+    this.transactions = const [],
+    this.onAddExpense,
+    this.onAddIncome,
+    this.onSeeAll,
+  });
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final spentThisMonth = DummyTransactions.list
+    final spentThisMonth = transactions
         .where(
           (transaction) =>
               !transaction.isIncome &&
@@ -37,14 +47,14 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Step 6: quick actions
-            const QuickActionsRow(),
+            QuickActionsRow(
+              onAddExpense: onAddExpense,
+              onAddIncome: onAddIncome,
+            ),
             const SizedBox(height: 24),
 
-            // Step 8: recent transactions (fake data for now)
-            RecentTransactions(
-              transactions: DummyTransactions.list,
-              onSeeAll: () {},
-            ),
+            // Recent saved transactions
+            RecentTransactions(transactions: transactions, onSeeAll: onSeeAll),
           ],
         ),
       ),

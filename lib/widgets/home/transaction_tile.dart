@@ -11,10 +11,12 @@ class TransactionTile extends StatelessWidget {
 
   IconData _categoryIcon(String category) {
     switch (category.toLowerCase()) {
+      case 'food & dining':
       case 'food':
         return Icons.restaurant_rounded;
       case 'transport':
         return Icons.directions_bus_rounded;
+      case 'bills & utilities':
       case 'bills':
         return Icons.receipt_long_rounded;
       case 'shopping':
