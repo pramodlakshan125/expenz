@@ -1,4 +1,5 @@
 import 'package:expenz/auth/login.dart';
+import 'package:expenz/constant/colors.dart';
 import 'package:expenz/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,7 +20,30 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Expenz',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: "Inter"),
+      theme: ThemeData(
+        fontFamily: 'Inter',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          primary: AppColors.primary,
+          onPrimary: AppColors.textOnPrimary,
+          surface: AppColors.cardSurface,
+          onSurface: AppColors.textPrimary,
+        ),
+        scaffoldBackgroundColor: AppColors.background,
+        // Floating messages appear above the add button without moving it.
+        snackBarTheme: const SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+        ),
+        dialogTheme: const DialogThemeData(
+          backgroundColor: AppColors.cardSurface,
+          surfaceTintColor: Colors.transparent,
+        ),
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: AppColors.primary,
+          selectionColor: AppColors.primary.withValues(alpha: 0.25),
+          selectionHandleColor: AppColors.primary,
+        ),
+      ),
 
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
