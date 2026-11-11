@@ -43,22 +43,22 @@ class _MainScreenState extends State<MainScreen> {
     return SafeArea(
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.cloud_off_rounded,
                 size: 40,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(message, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: _retryTransactions,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Try again'),
+                icon: Icon(Icons.refresh),
+                label: Text('Try again'),
               ),
             ],
           ),
@@ -84,13 +84,13 @@ class _MainScreenState extends State<MainScreen> {
         if (snapshot.hasError) {
           debugPrint('Transaction stream failed: ${snapshot.error}');
         }
-        final transactions = snapshot.data ?? const <TransactionModel>[];
+        final transactions = snapshot.data ?? <TransactionModel>[];
         //screen list
         final List<Widget> pages = [
           snapshot.hasError
               ? _transactionError(snapshot.error!)
               : snapshot.connectionState == ConnectionState.waiting
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator())
               : HomeScreen(
                   transactions: transactions,
                   onAddExpense: () => _add(),
@@ -99,7 +99,7 @@ class _MainScreenState extends State<MainScreen> {
                   onInsights: () => setState(() => _currentIndex = 2),
                   onGoals: () => Navigator.push(
                     context,
-                    MaterialPageRoute<void>(builder: (_) => const GoalsPage()),
+                    MaterialPageRoute<void>(builder: (_) => GoalsPage()),
                   ),
                 ),
           TransactionPage(
@@ -117,9 +117,9 @@ class _MainScreenState extends State<MainScreen> {
           // Round button in the middle of the bar
           floatingActionButton: FloatingActionButton(
             onPressed: () => _add(),
-            shape: const CircleBorder(),
+            shape: CircleBorder(),
             backgroundColor: AppColors.primary,
-            child: const Icon(Icons.add, color: Colors.white),
+            child: Icon(Icons.add, color: Colors.white),
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,

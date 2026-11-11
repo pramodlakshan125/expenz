@@ -31,11 +31,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       // await FirebaseAuth.instance
       //     .sendPasswordResetEmail(email: mailcontroller.text.trim());
 
-      await Future.delayed(const Duration(seconds: 1)); // demo delay
+      await Future.delayed(Duration(seconds: 1)); // demo delay
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           backgroundColor: AppColors.primary,
           content: Text("Password reset link sent! Check your email."),
         ),
@@ -57,20 +57,17 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 20.0,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
             child: Form(
               key: _formkey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20.0),
+                  SizedBox(height: 20.0),
 
                   // Header Image (same as login screen)
                   Center(
@@ -87,7 +84,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             color: AppColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Symbols.account_balance_wallet_rounded,
                             size: 60,
                             color: AppColors.primary,
@@ -97,37 +94,39 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     ),
                   ),
 
-                  const SizedBox(height: 30.0),
+                  SizedBox(height: 30.0),
 
-                  const Text(
+                  Text(
                     "Forgot Password?",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 8.0),
-                  const Text(
+                  SizedBox(height: 8.0),
+                  Text(
                     "Enter your email address and we'll send you a link to reset your password.",
                     style: TextStyle(
                       fontSize: 15,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
 
-                  const SizedBox(height: 30.0),
+                  SizedBox(height: 30.0),
 
                   // Email Field
                   Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       vertical: 4.0,
                       horizontal: 20.0,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.cardSurface,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.divider),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                     ),
                     child: TextFormField(
                       controller: mailcontroller,
@@ -143,36 +142,36 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         }
                         return null;
                       },
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Email Address",
                         prefixIcon: Icon(
                           Symbols.mail_rounded,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         hintStyle: TextStyle(
-                          color: AppColors.textMuted,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 16.0,
                         ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 30.0),
+                  SizedBox(height: 30.0),
 
                   // Send Reset Link Button
                   GestureDetector(
                     onTap: _isLoading ? null : _resetPassword,
                     child: Container(
                       width: MediaQuery.of(context).size.width,
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
                       decoration: BoxDecoration(
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Center(
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 22,
                                 width: 22,
                                 child: CircularProgressIndicator(
@@ -180,7 +179,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                   color: AppColors.textOnPrimary,
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 "Send Reset Link",
                                 style: TextStyle(
                                   color: AppColors.textOnPrimary,
@@ -192,13 +191,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     ),
                   ),
 
-                  const SizedBox(height: 30.0),
+                  SizedBox(height: 30.0),
 
                   // Back to Login
                   Center(
                     child: GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text(
+                      child: Text(
                         "Back to Sign In",
                         style: TextStyle(
                           color: AppColors.primary,

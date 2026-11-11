@@ -25,29 +25,32 @@ class HomeHeader extends StatelessWidget {
           backgroundColor: AppColors.primary.withValues(alpha: 0.12),
           child: Text(
             initial,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.primary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Welcome Back 👋',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2),
               Text(
                 userName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -57,18 +60,20 @@ class HomeHeader extends StatelessWidget {
         ),
         InkWell(
           onTap: onBellTap,
-          customBorder: const CircleBorder(),
+          customBorder: CircleBorder(),
           child: Stack(
             children: [
               Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE2F0EB),
+                  color: Color(0xFFE2F0EB),
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.divider),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
                 ),
-                child: const Icon(AppIcons.bell, color: Color(0xFF007F61)),
+                child: Icon(AppIcons.bell, color: Color(0xFF007F61)),
               ),
               if (hasNotification)
                 Positioned(
@@ -77,7 +82,7 @@ class HomeHeader extends StatelessWidget {
                   child: Container(
                     width: 9,
                     height: 9,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
                     ),

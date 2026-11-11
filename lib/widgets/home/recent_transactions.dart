@@ -27,17 +27,17 @@ class RecentTransactions extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Recent Transactions',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
             TextButton(
               onPressed: onSeeAll,
-              child: const Text(
+              child: Text(
                 'See more',
                 style: TextStyle(
                   color: AppColors.primary,
@@ -48,22 +48,26 @@ class RecentTransactions extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.cardSurface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
           ),
           child: items.isEmpty
-              ? const Padding(
+              ? Padding(
                   padding: EdgeInsets.symmetric(vertical: 24),
                   child: Center(
                     child: Text(
                       'No transactions yet',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 )
@@ -72,7 +76,10 @@ class RecentTransactions extends StatelessWidget {
                     for (int i = 0; i < items.length; i++) ...[
                       TransactionTile(transaction: items[i]),
                       if (i != items.length - 1)
-                        const Divider(height: 1, color: AppColors.divider),
+                        Divider(
+                          height: 1,
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
                     ],
                   ],
                 ),

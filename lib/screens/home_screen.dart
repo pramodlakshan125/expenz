@@ -1,4 +1,3 @@
-import 'package:expenz/constant/colors.dart';
 import 'package:expenz/screens/goals_page.dart';
 import 'package:expenz/models/transaction_model.dart';
 import 'package:expenz/widgets/home/balance_card.dart';
@@ -39,17 +38,17 @@ class HomeScreen extends StatelessWidget {
         .fold<double>(0, (total, transaction) => total + transaction.amount);
 
     return Container(
-      color: AppColors.background,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
             // Step 4: header
-            const HomeHeader(userName: 'Pramod', hasNotification: true),
-            const SizedBox(height: 24),
+            HomeHeader(userName: 'Pramod', hasNotification: true),
+            SizedBox(height: 24),
 
             BalanceCard(spentAmount: spentThisMonth, monthlyBudget: 500000),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Step 6: quick actions
             QuickActionsRow(
@@ -58,7 +57,7 @@ class HomeScreen extends StatelessWidget {
               onGoals: onGoals,
               onInsights: onInsights,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Recent saved transactions
             RecentTransactions(
@@ -66,7 +65,7 @@ class HomeScreen extends StatelessWidget {
               maxItems: 4,
               onSeeAll: onSeeAll,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             GoalsSection(preview: true, onSeeMore: onGoals),
           ],
         ),

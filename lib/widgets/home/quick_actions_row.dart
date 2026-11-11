@@ -1,4 +1,3 @@
-import 'package:expenz/constant/colors.dart';
 import 'package:expenz/constant/app_icons.dart';
 import 'package:expenz/widgets/home/quick_action_item.dart';
 import 'package:flutter/material.dart';
@@ -26,15 +25,15 @@ class QuickActionsRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Quick Actions',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -50,7 +49,7 @@ class QuickActionsRow extends StatelessWidget {
             ),
             QuickActionItem(
               icon: Icons.bar_chart_rounded,
-              color: const Color(0xFF3C4C52),
+              color: Color(0xFF3C4C52),
               label: 'Insights',
               onTap: onInsights,
             ),

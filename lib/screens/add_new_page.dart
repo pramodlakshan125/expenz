@@ -108,16 +108,16 @@ class _AddNewPageState extends State<AddNewPage> {
         if (!didPop && !_saving) setState(() => _step = 0);
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           surfaceTintColor: Colors.white,
           automaticallyImplyLeading: false,
           leading: _step == 2
               ? null
               : IconButton(
                   tooltip: 'Back',
-                  icon: const Icon(Icons.arrow_back),
+                  icon: Icon(Icons.arrow_back),
                   onPressed: _saving
                       ? null
                       : () {
@@ -132,12 +132,12 @@ class _AddNewPageState extends State<AddNewPage> {
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+              constraints: BoxConstraints(maxWidth: 480),
               child: Column(
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 16,
                       ),
@@ -149,13 +149,13 @@ class _AddNewPageState extends State<AddNewPage> {
                                 : _step == 1
                                 ? 'Choose category'
                                 : 'Transaction saved',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 27,
                               fontWeight: FontWeight.w700,
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10),
                           Text(
                             _step == 0
                                 ? 'How much did you spend or receive?'
@@ -163,17 +163,17 @@ class _AddNewPageState extends State<AddNewPage> {
                                 ? 'What was this transaction for?'
                                 : '${_money(_saved!.amount)} was added to ${_saved!.category}.',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Color(0xFF48544F),
                               fontSize: 15,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           if (_step == 0) ...[
                             SizedBox(
                               width: double.infinity,
                               child: SegmentedButton<TransactionType>(
-                                segments: const [
+                                segments: [
                                   ButtonSegment(
                                     value: TransactionType.expense,
                                     icon: Icon(Icons.arrow_upward, size: 17),
@@ -188,9 +188,7 @@ class _AddNewPageState extends State<AddNewPage> {
                                 selected: {_type},
                                 showSelectedIcon: false,
                                 style: SegmentedButton.styleFrom(
-                                  selectedBackgroundColor: const Color(
-                                    0xFFE6F4EE,
-                                  ),
+                                  selectedBackgroundColor: Color(0xFFE6F4EE),
                                   selectedForegroundColor: _green,
                                 ),
                                 onSelectionChanged: (selection) => setState(() {
@@ -199,29 +197,29 @@ class _AddNewPageState extends State<AddNewPage> {
                                 }),
                               ),
                             ),
-                            const SizedBox(height: 36),
+                            SizedBox(height: 36),
                             TextField(
                               controller: _amount,
                               autofocus: true,
                               textAlign: TextAlign.center,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
+                              keyboardType: TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
                               inputFormatters: [
                                 TextInputFormatter.withFunction(
                                   (oldValue, newValue) =>
-                                      RegExp(r'^\d{0,10}(\.\d{0,2})?$')
-                                          .hasMatch(newValue.text)
+                                      RegExp(
+                                        r'^\d{0,10}(\.\d{0,2})?$',
+                                      ).hasMatch(newValue.text)
                                       ? newValue
                                       : oldValue,
                                 ),
                               ],
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 40,
                                 fontWeight: FontWeight.w600,
                               ),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText: '0',
                                 suffixText: 'LKR',
                                 focusedBorder: UnderlineInputBorder(
@@ -234,7 +232,7 @@ class _AddNewPageState extends State<AddNewPage> {
                               onChanged: (_) => setState(() => _error = null),
                               onSubmitted: (_) => _continue(),
                             ),
-                            const SizedBox(height: 20),
+                            SizedBox(height: 20),
                             Wrap(
                               spacing: 8,
                               children: [
@@ -255,15 +253,17 @@ class _AddNewPageState extends State<AddNewPage> {
                           if (_step == 1) ...[
                             for (final category in categories)
                               Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
+                                padding: EdgeInsets.only(bottom: 8),
                                 child: Material(
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.surface,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     side: BorderSide(
                                       color: _category == category.$1
                                           ? _green
-                                          : AppColors.divider,
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.outlineVariant,
                                       width: _category == category.$1 ? 2 : 1,
                                     ),
                                   ),
@@ -286,7 +286,7 @@ class _AddNewPageState extends State<AddNewPage> {
                                     ),
                                     title: Text(
                                       category.$1,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -297,7 +297,7 @@ class _AddNewPageState extends State<AddNewPage> {
                                           : Icons.circle_outlined,
                                       color: _category == category.$1
                                           ? _green
-                                          : const Color(0xFF8A9690),
+                                          : Color(0xFF8A9690),
                                     ),
                                     onTap: _saving
                                         ? null
@@ -307,12 +307,12 @@ class _AddNewPageState extends State<AddNewPage> {
                                   ),
                                 ),
                               ),
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12),
                             TextField(
                               controller: _note,
                               enabled: !_saving,
                               maxLength: 120,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: 'Note (optional)',
                                 hintText: 'e.g. Lunch with team',
                                 border: OutlineInputBorder(
@@ -324,20 +324,24 @@ class _AddNewPageState extends State<AddNewPage> {
                             ),
                           ],
                           if (_step == 2) ...[
-                            const SizedBox(height: 20),
-                            const CircleAvatar(
+                            SizedBox(height: 20),
+                            CircleAvatar(
                               radius: 44,
                               backgroundColor: Color(0xFFE7F5EF),
                               child: Icon(Icons.check, size: 46, color: _green),
                             ),
-                            const SizedBox(height: 32),
+                            SizedBox(height: 32),
                             Container(
-                              padding: const EdgeInsets.symmetric(
+                              padding: EdgeInsets.symmetric(
                                 horizontal: 18,
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                border: Border.all(color: AppColors.divider),
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Column(
@@ -346,13 +350,13 @@ class _AddNewPageState extends State<AddNewPage> {
                                     'Amount',
                                     '${_saved!.isIncome ? '+' : '−'}${_money(_saved!.amount)}',
                                   ),
-                                  const Divider(height: 1),
+                                  Divider(height: 1),
                                   _detail('Category', _saved!.category),
                                   if (_note.text.trim().isNotEmpty) ...[
-                                    const Divider(height: 1),
+                                    Divider(height: 1),
                                     _detail('Note', _note.text.trim()),
                                   ],
-                                  const Divider(height: 1),
+                                  Divider(height: 1),
                                   _detail(
                                     'Date',
                                     'Today, ${DateFormat('d MMM yyyy').format(_saved!.date)}',
@@ -363,12 +367,10 @@ class _AddNewPageState extends State<AddNewPage> {
                           ],
                           if (_error != null)
                             Padding(
-                              padding: const EdgeInsets.only(top: 16),
+                              padding: EdgeInsets.only(top: 16),
                               child: Text(
                                 _error!,
-                                style: const TextStyle(
-                                  color: AppColors.expense,
-                                ),
+                                style: TextStyle(color: AppColors.expense),
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -377,7 +379,7 @@ class _AddNewPageState extends State<AddNewPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+                    padding: EdgeInsets.fromLTRB(24, 12, 24, 16),
                     child: Column(
                       children: [
                         SizedBox(
@@ -396,7 +398,7 @@ class _AddNewPageState extends State<AddNewPage> {
                                 ? _save
                                 : () => Navigator.pop(context),
                             child: _saving
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 22,
                                     height: 22,
                                     child: CircularProgressIndicator(
@@ -406,7 +408,7 @@ class _AddNewPageState extends State<AddNewPage> {
                                   )
                                 : Text(
                                     _step == 2 ? 'Done' : 'Continue',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -423,7 +425,7 @@ class _AddNewPageState extends State<AddNewPage> {
                               _saved = null;
                               _error = null;
                             }),
-                            child: const Text(
+                            child: Text(
                               'Add another transaction',
                               style: TextStyle(
                                 color: _green,
@@ -444,17 +446,17 @@ class _AddNewPageState extends State<AddNewPage> {
   }
 
   Widget _detail(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 16),
+    padding: EdgeInsets.symmetric(vertical: 16),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Color(0xFF65716C))),
-        const SizedBox(width: 16),
+        Text(label, style: TextStyle(color: Color(0xFF65716C))),
+        SizedBox(width: 16),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ],

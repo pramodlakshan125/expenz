@@ -1,4 +1,3 @@
-import 'package:expenz/constant/colors.dart';
 import 'package:flutter/material.dart';
 
 /// White bottom bar with rounded top corners and a curved cut-out
@@ -18,12 +17,12 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      color: const Color.fromARGB(255, 255, 255, 255),
+      color: Theme.of(context).colorScheme.surface,
       surfaceTintColor: Colors.transparent,
       elevation: 12,
       shadowColor: Colors.black38,
       clipBehavior: Clip.antiAlias,
-      shape: const AutomaticNotchedShape(
+      shape: AutomaticNotchedShape(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
         ),
@@ -52,7 +51,7 @@ class CustomBottomNav extends StatelessWidget {
               ),
             ),
             // Empty space for the round middle button
-            const SizedBox(width: 72),
+            SizedBox(width: 72),
             Expanded(
               child: _NavItem(
                 icon: Icons.bar_chart_rounded,
@@ -94,8 +93,8 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isActive
-        ? const Color.fromARGB(255, 0, 0, 0)
-        : AppColors.textSecondary;
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.onSurfaceVariant;
 
     return InkWell(
       onTap: onTap,
@@ -106,7 +105,7 @@ class _NavItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, color: color, size: 24),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(

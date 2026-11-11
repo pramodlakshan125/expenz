@@ -1,8 +1,9 @@
 import 'package:expenz/constant/app_icons.dart';
 import 'package:expenz/auth/login.dart';
-import 'package:expenz/constant/colors.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:expenz/services/appearance_settings.dart';
 import 'package:intl/intl.dart';
 
 class Profile extends StatefulWidget {
@@ -18,6 +19,39 @@ class _ProfileState extends State<Profile> {
   bool _saving = false;
   bool _loggingOut = false;
 
+  Future<void> _appearance() async {
+    final selected = await showDialog<ThemeMode>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text('Appearance'),
+        children: ThemeMode.values
+            .map(
+              (mode) => SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, mode),
+                child: Row(
+                  children: [
+                    Icon(
+                      AppearanceSettings.mode.value == mode
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                    ),
+                    SizedBox(width: 12),
+                    Text(AppearanceSettings.label(mode)),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+    if (selected == null) return;
+    try {
+      await AppearanceSettings.setMode(selected);
+    } catch (_) {
+      _message('Could not save appearance. Please try again.');
+    }
+  }
+
   Future<void> _logout() async {
     if (_loggingOut) return;
     final navigator = Navigator.of(context, rootNavigator: true);
@@ -29,7 +63,7 @@ class _ProfileState extends State<Profile> {
       // Clear protected routes, including screens pushed outside the auth gate.
       if (navigator.mounted) {
         navigator.pushAndRemoveUntil(
-          MaterialPageRoute<void>(builder: (_) => const LogIn()),
+          MaterialPageRoute<void>(builder: (_) => LogIn()),
           (_) => false,
         );
       }
@@ -53,7 +87,7 @@ class _ProfileState extends State<Profile> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Personal information'),
+        title: Text('Personal information'),
         content: Form(
           key: formKey,
           child: Column(
@@ -63,16 +97,18 @@ class _ProfileState extends State<Profile> {
                 initialValue: name,
                 autofocus: true,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(labelText: 'Full name'),
+                decoration: InputDecoration(labelText: 'Full name'),
                 onChanged: (value) => name = value,
                 validator: (value) => value == null || value.trim().isEmpty
                     ? 'Enter your name'
                     : null,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(
                 user.email ?? user.phoneNumber ?? 'No contact information',
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -80,7 +116,7 @@ class _ProfileState extends State<Profile> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           FilledButton(
             onPressed: () {
@@ -88,7 +124,7 @@ class _ProfileState extends State<Profile> {
                 Navigator.pop(context, name.trim());
               }
             },
-            child: const Text('Save'),
+            child: Text('Save'),
           ),
         ],
       ),
@@ -112,7 +148,7 @@ class _ProfileState extends State<Profile> {
     final reset = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Account security'),
+        title: Text('Account security'),
         content: Text(
           hasPassword
               ? 'Send a password reset link to ${user.email}?'
@@ -121,12 +157,12 @@ class _ProfileState extends State<Profile> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close'),
           ),
           if (hasPassword && user.email != null)
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Send reset link'),
+              child: Text('Send reset link'),
             ),
         ],
       ),
@@ -158,12 +194,12 @@ class _ProfileState extends State<Profile> {
               .toUpperCase();
     final joined = user?.metadata.creationTime;
     return ColoredBox(
-      color: const Color(0xFFF5F8F7),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+          padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
           children: [
-            const Text(
+            Text(
               'Profile',
               style: TextStyle(
                 fontSize: 28,
@@ -171,42 +207,44 @@ class _ProfileState extends State<Profile> {
                 letterSpacing: -0.7,
               ),
             ),
-            const SizedBox(height: 22),
+            SizedBox(height: 22),
             _card(
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: const Color(0xFFE7F4EE),
+                      backgroundColor: Color(0xFFE7F4EE),
                       child: Text(
                         initials,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: _green,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             displayName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 5),
+                          SizedBox(height: 5),
                           Text(
                             user?.phoneNumber ?? user?.email ?? 'Not signed in',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -216,7 +254,7 @@ class _ProfileState extends State<Profile> {
                       onPressed: user == null || _saving
                           ? null
                           : () => _editProfile(user),
-                      child: const Text(
+                      child: Text(
                         'Edit',
                         style: TextStyle(
                           color: _green,
@@ -228,7 +266,7 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18),
             Row(
               children: [
                 Expanded(
@@ -239,14 +277,14 @@ class _ProfileState extends State<Profile> {
                         : DateFormat('MMM yyyy').format(joined),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(child: _stat('Transactions', '—')),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(child: _stat('Goals', '—')),
               ],
             ),
             if (_saving)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 16),
                 child: LinearProgressIndicator(color: _green),
               ),
@@ -299,38 +337,47 @@ class _ProfileState extends State<Profile> {
                   _row(AppIcons.globe, 'Language', value: 'English'),
                   _divider(),
                   _row(AppIcons.money, 'Currency', value: 'LKR'),
+                  _divider(),
+                  _row(
+                    Icons.brightness_6_outlined,
+                    'Appearance',
+                    value: AppearanceSettings.label(
+                      AppearanceSettings.mode.value,
+                    ),
+                    onTap: _appearance,
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: user == null || _saving || _loggingOut
                   ? null
                   : _logout,
               icon: _loggingOut
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(AppIcons.logout),
+                  : Icon(AppIcons.logout),
               label: Text(_loggingOut ? 'Logging out…' : 'Log out'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFC62828),
-                side: const BorderSide(color: Color(0xFFEBCACA)),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                foregroundColor: Color(0xFFC62828),
+                side: BorderSide(color: Color(0xFFEBCACA)),
+                padding: EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
-            const SizedBox(height: 14),
-            const Text(
+            SizedBox(height: 14),
+            Text(
               'Notifications are a session-only preview. Account statistics will appear when your transactions and goals are connected.',
               style: TextStyle(
                 fontSize: 12,
                 height: 1.5,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -340,49 +387,52 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _heading(String title) => Padding(
-    padding: const EdgeInsets.only(top: 24, bottom: 16),
+    padding: EdgeInsets.only(top: 24, bottom: 16),
     child: Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF5D6964),
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         letterSpacing: 0.4,
       ),
     ),
   );
   Widget _stat(String label, String value) => _card(
     Padding(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
           ),
         ],
       ),
     ),
   );
-  Widget _divider() => const Padding(
+  Widget _divider() => Padding(
     padding: EdgeInsets.symmetric(horizontal: 16),
-    child: Divider(height: 1, color: Color(0xFFE5EBE8)),
+    child: Divider(
+      height: 1,
+      color: Theme.of(context).colorScheme.outlineVariant,
+    ),
   );
   Widget _card(Widget child) => Material(
-    color: Colors.white,
+    color: Theme.of(context).colorScheme.surface,
     clipBehavior: Clip.antiAlias,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
-      side: const BorderSide(color: Color(0xFFE5EBE8)),
+      side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: child,
   );
@@ -393,19 +443,19 @@ class _ProfileState extends State<Profile> {
     VoidCallback? onTap,
     Widget? trailing,
   }) => ListTile(
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
     leading: Container(
       width: 34,
       height: 34,
       decoration: BoxDecoration(
-        color: const Color(0xFFE7F4EE),
+        color: Color(0xFFE7F4EE),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, size: 19, color: _green),
     ),
     title: Text(
       title,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
     ),
     onTap: onTap,
     trailing:
@@ -416,14 +466,17 @@ class _ProfileState extends State<Profile> {
             if (value != null)
               Text(
                 value,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF5D6964)),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             if (onTap != null) ...[
-              const SizedBox(width: 10),
-              const Icon(
+              SizedBox(width: 10),
+              Icon(
                 AppIcons.chevronRight,
                 size: 20,
-                color: Color(0xFF5D6964),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ],
           ],

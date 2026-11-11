@@ -10,12 +10,12 @@ class GoalsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFFF5F8F7),
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     appBar: AppBar(
-      title: const Text('Goals'),
-      backgroundColor: const Color(0xFFF5F8F7),
+      title: Text('Goals'),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     ),
-    body: const SingleChildScrollView(
+    body: SingleChildScrollView(
       padding: EdgeInsets.all(20),
       child: GoalsSection(),
     ),
@@ -23,8 +23,8 @@ class GoalsPage extends StatelessWidget {
       backgroundColor: _green,
       foregroundColor: Colors.white,
       onPressed: () => _createGoal(context),
-      icon: const Icon(Icons.add),
-      label: const Text('New goal'),
+      icon: Icon(Icons.add),
+      label: Text('New goal'),
     ),
   );
 }
@@ -45,14 +45,14 @@ Future<void> _createGoal(BuildContext context) async {
   final result = await showDialog<Map<String, dynamic>>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('New savings goal'),
+      title: Text('New savings goal'),
       content: Form(
         key: key,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
-              decoration: const InputDecoration(labelText: 'Goal name'),
+              decoration: InputDecoration(labelText: 'Goal name'),
               maxLength: 60,
               onChanged: (value) => title = value,
               validator: (value) => value == null || value.trim().isEmpty
@@ -60,12 +60,8 @@ Future<void> _createGoal(BuildContext context) async {
                   : null,
             ),
             TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Target amount (Rs.)',
-              ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              decoration: InputDecoration(labelText: 'Target amount (Rs.)'),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
               onChanged: (value) => target = value,
               validator: (value) {
                 final amount = double.tryParse(value ?? '');
@@ -80,7 +76,7 @@ Future<void> _createGoal(BuildContext context) async {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel'),
         ),
         FilledButton(
           onPressed: () {
@@ -93,7 +89,7 @@ Future<void> _createGoal(BuildContext context) async {
               });
             }
           },
-          child: const Text('Create'),
+          child: Text('Create'),
         ),
       ],
     ),
@@ -104,7 +100,7 @@ Future<void> _createGoal(BuildContext context) async {
   } catch (_) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not save goal. Please try again.')),
+        SnackBar(content: Text('Could not save goal. Please try again.')),
       );
     }
   }
@@ -131,7 +127,7 @@ class _GoalsSectionState extends State<GoalsSection> {
     children: [
       Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'Savings goals',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
@@ -140,46 +136,44 @@ class _GoalsSectionState extends State<GoalsSection> {
           if (widget.preview)
             TextButton(
               onPressed: widget.onSeeMore,
-              child: const Text('See more', style: TextStyle(color: _green)),
+              child: Text('See more', style: TextStyle(color: _green)),
             ),
         ],
       ),
-      const SizedBox(height: 12),
+      SizedBox(height: 12),
       StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _goals,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return _box(
-              const Text(
+              Text(
                 'Could not load goals. Check your connection.',
                 style: TextStyle(color: Colors.grey),
               ),
             );
           }
           if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(color: _green),
-            );
+            return Center(child: CircularProgressIndicator(color: _green));
           }
           final docs = snapshot.data!.docs;
           if (docs.isEmpty) {
             return _box(
               Column(
                 children: [
-                  const Icon(Icons.flag_rounded, size: 36, color: _green),
-                  const SizedBox(height: 10),
-                  const Text(
+                  Icon(Icons.flag_rounded, size: 36, color: _green),
+                  SizedBox(height: 10),
+                  Text(
                     'Save for something that matters',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 6),
-                  const Text(
+                  SizedBox(height: 6),
+                  Text(
                     'Create your first savings goal.',
                     style: TextStyle(color: Colors.grey),
                   ),
                   TextButton(
                     onPressed: () => _createGoal(context),
-                    child: const Text(
+                    child: Text(
                       'Create a goal',
                       style: TextStyle(color: _green),
                     ),
@@ -197,44 +191,39 @@ class _GoalsSectionState extends State<GoalsSection> {
                   ? (saved / target).clamp(0.0, 1.0)
                   : 0.0;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: 12),
                 child: _box(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.flag_rounded, color: _green),
-                          const SizedBox(width: 10),
+                          Icon(Icons.flag_rounded, color: _green),
+                          SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               data['title'] as String? ?? 'Savings goal',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ),
                           Text(
                             '${(progress * 100).round()}%',
-                            style: const TextStyle(color: _green),
+                            style: TextStyle(color: _green),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       LinearProgressIndicator(
                         value: progress,
                         color: _green,
-                        backgroundColor: const Color(0xFFE7F4EE),
+                        backgroundColor: Color(0xFFE7F4EE),
                         minHeight: 7,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                       Text(
                         'Rs. ${NumberFormat('#,##0.##').format(saved)} of Rs. ${NumberFormat('#,##0.##').format(target)}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -244,17 +233,17 @@ class _GoalsSectionState extends State<GoalsSection> {
           );
         },
       ),
-      if (!widget.preview) const SizedBox(height: 80),
+      if (!widget.preview) SizedBox(height: 80),
     ],
   );
 
   Widget _box(Widget child) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(18),
+    padding: EdgeInsets.all(18),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: const Color(0xFFE5EBE8)),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: child,
   );

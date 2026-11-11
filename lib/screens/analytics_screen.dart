@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:expenz/constant/app_icons.dart';
-import 'package:expenz/constant/colors.dart';
+
 import 'package:expenz/data/dummy_transactions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -42,13 +42,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   DateTime get _end => switch (_period) {
     'Year' => DateTime(_date.year + 1),
     'Month' => DateTime(_date.year, _date.month + 1),
-    _ => _start.add(const Duration(days: 7)),
+    _ => _start.add(Duration(days: 7)),
   };
   String get _label => switch (_period) {
     'Year' => DateFormat('yyyy').format(_date),
     'Month' => DateFormat('MMMM yyyy').format(_date),
     _ =>
-      '${DateFormat('d MMM').format(_start)} – ${DateFormat('d MMM yyyy').format(_end.subtract(const Duration(days: 1)))}',
+      '${DateFormat('d MMM').format(_start)} – ${DateFormat('d MMM yyyy').format(_end.subtract(Duration(days: 1)))}',
   };
   void _move(int step) => setState(() {
     _date = switch (_period) {
@@ -98,10 +98,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         if (!didPop) _back();
       },
       child: ColoredBox(
-        color: const Color(0xFFF5F8F7),
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: SafeArea(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+            padding: EdgeInsets.fromLTRB(20, 20, 20, 32),
             children: [
               if (_breakdown || _category != null)
                 Align(
@@ -109,13 +109,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: IconButton(
                     onPressed: _back,
                     tooltip: 'Back to insights',
-                    icon: const Icon(Icons.arrow_back),
+                    icon: Icon(Icons.arrow_back),
                   ),
                 ),
               if (_category != null) ...[
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppIcons.categoryColor(_category!),
                       borderRadius: BorderRadius.circular(18),
@@ -127,31 +127,27 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text(
                   _category!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Text(
                   _money(categoryTotal),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   _label,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-                const SizedBox(height: 26),
+                SizedBox(height: 26),
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
@@ -174,12 +170,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 26),
-                const Text(
+                SizedBox(height: 26),
+                Text(
                   'Transactions',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _card(
                   Column(
                     children: selected
@@ -193,9 +189,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             ),
                             trailing: Text(
                               '-${_money(t.amount)}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ),
                         )
@@ -205,89 +199,88 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ] else ...[
                 Text(
                   _breakdown ? 'Spending by category' : 'Insights',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 27,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.7,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   _breakdown ? _label : 'Where your money went',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-                const SizedBox(height: 22),
+                SizedBox(height: 22),
                 if (!_breakdown) ...[
                   _segments(
                     ['Week', 'Month', 'Year'],
                     _period,
                     (value) => setState(() => _period = value),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
                         onPressed: () => _move(-1),
                         tooltip: 'Previous period',
-                        icon: const Icon(Icons.chevron_left),
+                        icon: Icon(Icons.chevron_left),
                       ),
                       Flexible(
                         child: Text(
                           _label,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                       IconButton(
                         onPressed: () => _move(1),
                         tooltip: 'Next period',
-                        icon: const Icon(Icons.chevron_right),
+                        icon: Icon(Icons.chevron_right),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.all(22),
+                    padding: EdgeInsets.all(22),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF007F61),
+                      color: Color(0xFF007F61),
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Total spent',
                           style: TextStyle(color: Colors.white70),
                         ),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         Text(
                           _money(total),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 32,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        SizedBox(height: 18),
                         Text(
                           '${transactions.length} expenses · $_label',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: 18),
                 ] else ...[
                   _segments(
                     ['Chart view', 'List view'],
                     _chart ? 'Chart view' : 'List view',
                     (value) => setState(() => _chart = value == 'Chart view'),
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: 18),
                 ],
                 _card(
                   Column(
@@ -297,7 +290,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'By category',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
@@ -307,17 +300,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             TextButton(
                               onPressed: () =>
                                   setState(() => _breakdown = true),
-                              child: const Text('See all'),
+                              child: Text('See all'),
                             ),
                           ],
                         ),
                       if (categories.isEmpty)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.symmetric(vertical: 36),
                           child: Center(
                             child: Text(
                               'No expenses in this period.',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         )
@@ -344,14 +341,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      const SizedBox(height: 5),
+                                      SizedBox(height: 5),
                                       Text(
                                         _breakdown
                                             ? 'Total spent'
                                             : 'categories',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
-                                          color: AppColors.textSecondary,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                         ),
                                       ),
                                     ],
@@ -360,7 +359,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 18),
+                          SizedBox(height: 18),
                         ],
                         for (var i = 0; i < categories.length; i++)
                           ListTile(
@@ -372,16 +371,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             minLeadingWidth: 10,
                             title: Text(
                               categories[i].key,
-                              style: const TextStyle(fontSize: 14),
+                              style: TextStyle(fontSize: 14),
                             ),
                             subtitle: Text(
                               '${(categories[i].value / total * 100).round()}% of spending',
                             ),
                             trailing: Text(
                               _money(categories[i].value),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
                             onTap: () =>
                                 setState(() => _category = categories[i].key),
@@ -391,39 +388,33 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ),
                 ),
                 if (!_breakdown && categories.isNotEmpty) ...[
-                  const SizedBox(height: 18),
+                  SizedBox(height: 18),
                   Container(
-                    padding: const EdgeInsets.all(18),
+                    padding: EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF8DE),
-                      border: Border.all(color: const Color(0xFFE2C559)),
+                      color: Color(0xFFFFF8DE),
+                      border: Border.all(color: Color(0xFFE2C559)),
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          AppIcons.idea,
-                          color: Color(0xFF9F7E00),
-                          size: 30,
-                        ),
-                        const SizedBox(width: 14),
+                        Icon(AppIcons.idea, color: Color(0xFF9F7E00), size: 30),
+                        SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'TOP INSIGHT',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6),
                               Text(
                                 '${categories.first.key} is your largest expense category at ${(categories.first.value / total * 100).round()}% of spending.',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),
@@ -432,12 +423,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 14),
-                const Text(
+                SizedBox(height: 14),
+                Text(
                   'Based on your current sample transactions',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -454,29 +445,32 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          style: TextStyle(
+            fontSize: 11,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
-        const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        SizedBox(height: 8),
+        Text(value, style: TextStyle(fontWeight: FontWeight.w600)),
       ],
     ),
   );
   Widget _card(Widget child) => Material(
-    color: Colors.white,
+    color: Theme.of(context).colorScheme.surface,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
-      side: const BorderSide(color: Color(0xFFE5EBE8)),
+      side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
     ),
-    child: Padding(padding: const EdgeInsets.all(16), child: child),
+    child: Padding(padding: EdgeInsets.all(16), child: child),
   );
   Widget _segments(
     List<String> labels,
     String selected,
     ValueChanged<String> onChanged,
   ) => Container(
-    padding: const EdgeInsets.all(4),
+    padding: EdgeInsets.all(4),
     decoration: BoxDecoration(
-      border: Border.all(color: const Color(0xFFE5EBE8)),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       borderRadius: BorderRadius.circular(30),
     ),
     child: Row(
@@ -484,13 +478,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           .map(
             (label) => Expanded(
               child: Material(
-                color: selected == label ? Colors.white : Colors.transparent,
+                color: selected == label
+                    ? Theme.of(context).colorScheme.surface
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(24),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(24),
                   onTap: () => onChanged(label),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: EdgeInsets.symmetric(vertical: 10),
                     child: Text(
                       label,
                       textAlign: TextAlign.center,
@@ -499,8 +495,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             ? FontWeight.w600
                             : FontWeight.normal,
                         color: selected == label
-                            ? AppColors.textPrimary
-                            : AppColors.textSecondary,
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),

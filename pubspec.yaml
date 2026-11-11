@@ -43,6 +43,7 @@ dependencies:
   cloud_firestore: ^7.0.0
   persistent_bottom_nav_bar_v2: ^6.5.0
   intl: ^0.20.3
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

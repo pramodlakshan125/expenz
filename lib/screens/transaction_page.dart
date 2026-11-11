@@ -1,6 +1,6 @@
 import 'package:expenz/models/transaction_model.dart';
 import 'package:expenz/constant/app_icons.dart';
-import 'package:expenz/constant/colors.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -119,19 +119,19 @@ class _TransactionPageState extends State<TransactionPage> {
         .where((t) => !t.isIncome)
         .fold<double>(0, (sum, t) => sum + t.amount);
     return ColoredBox(
-      color: const Color(0xFFF5F8F7),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
               sliver: SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -147,7 +147,9 @@ class _TransactionPageState extends State<TransactionPage> {
                               Text(
                                 'All your transactions',
                                 style: TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -157,56 +159,60 @@ class _TransactionPageState extends State<TransactionPage> {
                           onPressed: _filterDates,
                           tooltip: 'Filter dates',
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.white,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.surface,
                             foregroundColor: _green,
-                            side: const BorderSide(color: Color(0xFFE5EBE8)),
+                            side: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                            ),
                           ),
-                          icon: const Icon(AppIcons.filter),
+                          icon: Icon(AppIcons.filter),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 22),
+                    SizedBox(height: 22),
                     TextField(
                       controller: _search,
                       onChanged: (_) => setState(() {}),
                       decoration: InputDecoration(
                         hintText: 'Search transactions',
                         filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: const Icon(
+                        fillColor: Theme.of(context).colorScheme.surface,
+                        prefixIcon: Icon(
                           AppIcons.search,
                           size: 21,
-                          color: Color(0xFF5D6964),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         suffixIcon: _search.text.isEmpty
                             ? null
                             : IconButton(
                                 tooltip: 'Clear search',
-                                icon: const Icon(AppIcons.close, size: 18),
+                                icon: Icon(AppIcons.close, size: 18),
                                 onPressed: () => setState(_search.clear),
                               ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE5EBE8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFE5EBE8),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
-                          borderSide: const BorderSide(color: _green, width: 2),
+                          borderSide: BorderSide(color: _green, width: 2),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                        ),
+                        contentPadding: EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     Wrap(
                       spacing: 8,
                       children: ['All', 'Expenses', 'Income']
@@ -216,17 +222,21 @@ class _TransactionPageState extends State<TransactionPage> {
                               selected: _type == type,
                               showCheckmark: false,
                               selectedColor: _green,
-                              backgroundColor: Colors.white,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surface,
                               labelStyle: TextStyle(
                                 color: _type == type
                                     ? Colors.white
-                                    : AppColors.textPrimary,
+                                    : Theme.of(context).colorScheme.onSurface,
                               ),
-                              shape: const StadiumBorder(),
+                              shape: StadiumBorder(),
                               side: BorderSide(
                                 color: _type == type
                                     ? _green
-                                    : const Color(0xFFE5EBE8),
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
                               ),
                               onSelected: (_) => setState(() => _type = type),
                             ),
@@ -235,7 +245,7 @@ class _TransactionPageState extends State<TransactionPage> {
                     ),
                     if (_range != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: EdgeInsets.only(top: 10),
                         child: InputChip(
                           label: Text(
                             '${DateFormat('d MMM yy').format(_range!.start)} – ${DateFormat('d MMM yy').format(_range!.end)}',
@@ -244,7 +254,7 @@ class _TransactionPageState extends State<TransactionPage> {
                           deleteButtonTooltipMessage: 'Clear date filter',
                         ),
                       ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     if (!widget.loading && !widget.hasError)
                       if (query.isEmpty)
                         Row(
@@ -256,12 +266,12 @@ class _TransactionPageState extends State<TransactionPage> {
                                 _green,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             Expanded(
                               child: _summary(
                                 'Money out · ${_range == null ? DateFormat('MMM').format(now) : 'Selected dates'}',
                                 '−${_money(expense)}',
-                                AppColors.textPrimary,
+                                Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ],
@@ -272,16 +282,16 @@ class _TransactionPageState extends State<TransactionPage> {
                             Expanded(
                               child: Text(
                                 '${visible.length} results',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.w600),
                               ),
                             ),
                             Text(
                               'Total ${_signed(_net(visible))}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -295,9 +305,9 @@ class _TransactionPageState extends State<TransactionPage> {
                 hasScrollBody: false,
                 child: Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(24),
                     child: widget.loading
-                        ? const CircularProgressIndicator(color: _green)
+                        ? CircularProgressIndicator(color: _green)
                         : Text(
                             widget.hasError
                                 ? 'Could not load transactions. Check your connection.'
@@ -305,8 +315,10 @@ class _TransactionPageState extends State<TransactionPage> {
                                 ? 'No transactions yet. Tap + to add one.'
                                 : 'No matching transactions. Try another search or filter.',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                   ),
@@ -314,7 +326,7 @@ class _TransactionPageState extends State<TransactionPage> {
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
+                padding: EdgeInsets.fromLTRB(20, 4, 20, 32),
                 sliver: SliverList.builder(
                   itemCount: groups.length,
                   itemBuilder: (context, index) {
@@ -322,7 +334,7 @@ class _TransactionPageState extends State<TransactionPage> {
                     return Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             vertical: 18,
                             horizontal: 4,
                           ),
@@ -335,7 +347,7 @@ class _TransactionPageState extends State<TransactionPage> {
                                       : DateFormat(
                                           'MMMM yyyy',
                                         ).format(entry.key),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFF46534D),
                                   ),
@@ -344,9 +356,11 @@ class _TransactionPageState extends State<TransactionPage> {
                               if (query.isEmpty)
                                 Text(
                                   _signed(_net(entry.value)),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                             ],
@@ -357,9 +371,11 @@ class _TransactionPageState extends State<TransactionPage> {
                             children: [
                               for (var i = 0; i < entry.value.length; i++) ...[
                                 if (i > 0)
-                                  const Divider(
+                                  Divider(
                                     height: 1,
-                                    color: Color(0xFFE5EBE8),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
                                   ),
                                 _transaction(entry.value[i], query.isNotEmpty),
                               ],
@@ -378,30 +394,27 @@ class _TransactionPageState extends State<TransactionPage> {
   }
 
   Widget _card(Widget child) => Material(
-    color: Colors.white,
+    color: Theme.of(context).colorScheme.surface,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(18),
-      side: const BorderSide(color: Color(0xFFE5EBE8)),
+      side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
     ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: child,
-    ),
+    child: Padding(padding: EdgeInsets.symmetric(horizontal: 14), child: child),
   );
   Widget _summary(String label, String amount, Color color) => _card(
     Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: EdgeInsets.symmetric(vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 5),
+          SizedBox(height: 5),
           Text(
             amount,
             style: TextStyle(fontWeight: FontWeight.w600, color: color),
@@ -411,7 +424,7 @@ class _TransactionPageState extends State<TransactionPage> {
     ),
   );
   Widget _transaction(TransactionModel t, bool searching) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 14),
+    padding: EdgeInsets.symmetric(vertical: 14),
     child: Row(
       children: [
         Container(
@@ -427,7 +440,7 @@ class _TransactionPageState extends State<TransactionPage> {
             size: 23,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,25 +449,22 @@ class _TransactionPageState extends State<TransactionPage> {
                 t.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 5),
+              SizedBox(height: 5),
               Text(
                 '${t.category} · ${DateFormat(searching ? 'd MMM, HH:mm' : 'HH:mm').format(t.date)}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Flexible(
           child: Text(
             '${t.isIncome ? '+' : '−'}${_money(t.amount)}',
@@ -462,7 +472,9 @@ class _TransactionPageState extends State<TransactionPage> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: t.isIncome ? _green : AppColors.textPrimary,
+              color: t.isIncome
+                  ? _green
+                  : Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),

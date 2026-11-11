@@ -69,16 +69,22 @@ class _BalanceCardState extends State<BalanceCard> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppColors.cardSurface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.divider.withValues(alpha: 0.7)),
+        border: Border.all(
+          color: Theme.of(
+            context,
+          ).colorScheme.outlineVariant.withValues(alpha: 0.7),
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.045),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.045),
             blurRadius: 24,
-            offset: const Offset(0, 10),
+            offset: Offset(0, 10),
           ),
         ],
       ),
@@ -94,7 +100,7 @@ class _BalanceCardState extends State<BalanceCard> {
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     AppIcons.wallet,
                     size: 21,
@@ -102,15 +108,15 @@ class _BalanceCardState extends State<BalanceCard> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
+              SizedBox(width: 12),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Monthly spending',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -119,7 +125,7 @@ class _BalanceCardState extends State<BalanceCard> {
                     Text(
                       'Your budget progress',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
                     ),
@@ -127,10 +133,7 @@ class _BalanceCardState extends State<BalanceCard> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -147,7 +150,7 @@ class _BalanceCardState extends State<BalanceCard> {
               ),
             ],
           ),
-          const SizedBox(height: 26),
+          SizedBox(height: 26),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -156,68 +159,68 @@ class _BalanceCardState extends State<BalanceCard> {
                   _isHidden ? 'Rs. ••••' : _format(spent),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 34,
                     height: 1.1,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               GestureDetector(
                 onTap: () => setState(() => _isHidden = !_isHidden),
                 child: Icon(
                   _isHidden ? Icons.visibility_off_outlined : AppIcons.eye,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   size: 22,
                 ),
               ),
               if (widget.onArrowTap != null) ...[
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 InkWell(
                   onTap: widget.onArrowTap,
-                  customBorder: const CircleBorder(),
-                  child: const Padding(
+                  customBorder: CircleBorder(),
+                  child: Padding(
                     padding: EdgeInsets.all(4),
                     child: Icon(
                       Icons.north_east_rounded,
                       size: 20,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
               ],
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             'of ${_isHidden ? '••••' : _format(widget.monthlyBudget)} budget',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 13,
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: LinearProgressIndicator(
               value: progress.toDouble(),
               minHeight: 9,
-              backgroundColor: AppColors.background,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               valueColor: AlwaysStoppedAnimation<Color>(progressColor),
               semanticsLabel: 'Monthly budget spent',
               semanticsValue: '${(progress * 100).round()}%',
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 _isHidden ? '••••' : '$percentUsed% used',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -234,7 +237,7 @@ class _BalanceCardState extends State<BalanceCard> {
                 style: TextStyle(
                   color: isAtLimit
                       ? AppColors.dangerState
-                      : AppColors.textPrimary,
+                      : Theme.of(context).colorScheme.onSurface,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -242,22 +245,22 @@ class _BalanceCardState extends State<BalanceCard> {
             ],
           ),
           if (isOverBudget) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.dangerState.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     AppIcons.warning,
                     size: 18,
                     color: AppColors.dangerState,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       "You're over budget. Review your spending plan.",

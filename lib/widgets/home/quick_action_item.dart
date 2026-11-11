@@ -1,4 +1,3 @@
-import 'package:expenz/constant/colors.dart';
 import 'package:flutter/material.dart';
 
 class QuickActionItem extends StatelessWidget {
@@ -22,7 +21,7 @@ class QuickActionItem extends StatelessWidget {
       children: [
         InkWell(
           onTap: onTap,
-          customBorder: const CircleBorder(),
+          customBorder: CircleBorder(),
           child: Container(
             width: 60,
             height: 60,
@@ -33,11 +32,11 @@ class QuickActionItem extends StatelessWidget {
             child: Icon(icon, color: color, size: 26),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
