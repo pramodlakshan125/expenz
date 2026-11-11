@@ -1,4 +1,5 @@
 import 'package:expenz/constant/colors.dart';
+import 'auth_error.dart';
 import 'package:expenz/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _LogInState extends State<LogIn> {
   final TextEditingController passwordcontroller = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -38,11 +40,13 @@ class _LogInState extends State<LogIn> {
   }
 
   Future<void> userLogin() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
     try {
       // 1. Check the email and password with Firebase
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: mailcontroller.text.trim(),
-        password: passwordcontroller.text.trim(),
+        password: passwordcontroller.text,
       );
 
       // 2. If correct, show a green message!
@@ -59,17 +63,20 @@ class _LogInState extends State<LogIn> {
         MaterialPageRoute(builder: (context) => const MainScreen()),
       );
     } on FirebaseAuthException catch (e) {
-      // 4. If the email or password is wrong, show a red message
-      String message = "Login failed";
-      if (e.code == 'user-not-found') {
-        message = "No account found for this email";
-      } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        message = "Wrong email or password";
-      }
-
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(backgroundColor: Colors.redAccent, content: Text(message)),
+        SnackBar(
+          backgroundColor: Colors.redAccent,
+          content: Text(authErrorMessage(e)),
+        ),
       );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not sign in. Please try again.')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -265,10 +272,10 @@ class _LogInState extends State<LogIn> {
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          "Sign In",
-                          style: TextStyle(
+                          _isLoading ? 'Signing in…' : 'Sign In',
+                          style: const TextStyle(
                             color: AppColors.textOnPrimary,
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
@@ -306,7 +313,13 @@ class _LogInState extends State<LogIn> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          // Google Login Action
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Google sign-in is not available yet. Use email and password.',
+                              ),
+                            ),
+                          );
                         },
                         child: Container(
                           padding: const EdgeInsets.all(12),
@@ -325,7 +338,13 @@ class _LogInState extends State<LogIn> {
                       const SizedBox(width: 20.0),
                       GestureDetector(
                         onTap: () {
-                          // Apple Login Action
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Apple sign-in is not available yet. Use email and password.',
+                              ),
+                            ),
+                          );
                         },
                         child: Container(
                           padding: const EdgeInsets.all(12),

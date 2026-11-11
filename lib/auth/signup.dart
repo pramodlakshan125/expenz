@@ -1,4 +1,5 @@
 import 'package:expenz/constant/colors.dart';
+import 'auth_error.dart';
 import 'package:expenz/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController passwordcontroller = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -28,12 +30,17 @@ class _SignUpState extends State<SignUp> {
 
   // This function talks to Firebase to create the account
   Future<void> registration() async {
+    if (_isLoading) return;
+    final name = namecontroller.text.trim();
+    setState(() => _isLoading = true);
     try {
       // 1. Send the email and password to Firebase
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: mailcontroller.text.trim(),
-        password: passwordcontroller.text.trim(),
-      );
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: mailcontroller.text.trim(),
+            password: passwordcontroller.text,
+          );
+      await credential.user?.updateDisplayName(name);
 
       // 2. Show a green pop-up message at the bottom when it works!
       if (!mounted) return;
@@ -48,17 +55,22 @@ class _SignUpState extends State<SignUp> {
         MaterialPageRoute(builder: (context) => const MainScreen()),
       );
     } on FirebaseAuthException catch (e) {
-      // 3. If something goes wrong (like a short password), show a red message
-      String message = "Something went wrong";
-      if (e.code == 'weak-password') {
-        message = "Password is too weak (use at least 6 characters)";
-      } else if (e.code == 'email-already-in-use') {
-        message = "This email is already registered";
-      }
-
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(backgroundColor: Colors.redAccent, content: Text(message)),
+        SnackBar(
+          backgroundColor: Colors.redAccent,
+          content: Text(authErrorMessage(e)),
+        ),
       );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not create your account. Please try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -265,10 +277,10 @@ class _SignUpState extends State<SignUp> {
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          "Sign Up",
-                          style: TextStyle(
+                          _isLoading ? 'Creating account…' : 'Sign Up',
+                          style: const TextStyle(
                             color: AppColors.textOnPrimary,
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,

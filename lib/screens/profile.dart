@@ -1,4 +1,5 @@
 import 'package:expenz/constant/app_icons.dart';
+import 'package:expenz/auth/login.dart';
 import 'package:expenz/constant/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,29 @@ class _ProfileState extends State<Profile> {
   static const _green = Color(0xFF007F61);
   bool _notifications = true;
   bool _saving = false;
+  bool _loggingOut = false;
+
+  Future<void> _logout() async {
+    if (_loggingOut) return;
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _loggingOut = true);
+    try {
+      await FirebaseAuth.instance.signOut();
+      messenger.clearSnackBars();
+      // Clear protected routes, including screens pushed outside the auth gate.
+      if (navigator.mounted) {
+        navigator.pushAndRemoveUntil(
+          MaterialPageRoute<void>(builder: (_) => const LogIn()),
+          (_) => false,
+        );
+      }
+    } catch (_) {
+      _message('Could not log out. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loggingOut = false);
+    }
+  }
 
   void _message(String message) {
     if (!mounted) return;
@@ -276,6 +300,28 @@ class _ProfileState extends State<Profile> {
                   _divider(),
                   _row(AppIcons.money, 'Currency', value: 'LKR'),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: user == null || _saving || _loggingOut
+                  ? null
+                  : _logout,
+              icon: _loggingOut
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(AppIcons.logout),
+              label: Text(_loggingOut ? 'Logging out…' : 'Log out'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFFC62828),
+                side: const BorderSide(color: Color(0xFFEBCACA)),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
             const SizedBox(height: 14),
