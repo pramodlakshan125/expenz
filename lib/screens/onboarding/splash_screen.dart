@@ -1,3 +1,4 @@
+import 'package:expenz/constant/colors.dart';
 import 'package:expenz/screens/onboarding/front_page.dart';
 import 'package:expenz/screens/onboarding/onboarding_screen.dart';
 
@@ -27,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFFF5F4F9),
+      backgroundColor: AppColors.background,
 
       body: FrontPage(),
     );

@@ -19,21 +19,21 @@ class AddNewPage extends StatefulWidget {
 }
 
 class _AddNewPageState extends State<AddNewPage> {
-  static const _green = Color(0xFF007D60);
+  static const _green = AppColors.primary;
   static const _expenses = [
-    ('Food & Dining', Icons.local_cafe, Color(0xFFC7712A)),
-    ('Transport', Icons.directions_bus, Color(0xFF5C75AB)),
-    ('Shopping', Icons.shopping_cart, Color(0xFF747B43)),
-    ('Bills & Utilities', Icons.bolt, Color(0xFF3C4C53)),
-    ('Entertainment', Icons.movie, Color(0xFF8C5D88)),
-    ('Health', Icons.add, Color(0xFFDDB518)),
-    ('Other', Icons.grid_view_rounded, Color(0xFF71817A)),
+    ('Food & Dining', Icons.local_cafe, AppColors.warningState),
+    ('Transport', Icons.directions_bus, AppColors.textMuted),
+    ('Shopping', Icons.shopping_cart, AppColors.safeState),
+    ('Bills & Utilities', Icons.bolt, AppColors.textSecondary),
+    ('Entertainment', Icons.movie, AppColors.expense),
+    ('Health', Icons.add, AppColors.warningState),
+    ('Other', Icons.grid_view_rounded, AppColors.textSecondary),
   ];
   static const _incomes = [
     ('Salary', Icons.payments, _green),
-    ('Freelance', Icons.work_outline, Color(0xFF5C75AB)),
-    ('Gift', Icons.card_giftcard, Color(0xFF8C5D88)),
-    ('Other', Icons.grid_view_rounded, Color(0xFF71817A)),
+    ('Freelance', Icons.work_outline, AppColors.textMuted),
+    ('Gift', Icons.card_giftcard, AppColors.expense),
+    ('Other', Icons.grid_view_rounded, AppColors.textSecondary),
   ];
   final _amount = TextEditingController();
   final _note = TextEditingController();
@@ -108,10 +108,10 @@ class _AddNewPageState extends State<AddNewPage> {
         if (!didPop && !_saving) setState(() => _step = 0);
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          surfaceTintColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          surfaceTintColor: Colors.transparent,
           automaticallyImplyLeading: false,
           leading: _step == 2
               ? null
@@ -164,7 +164,9 @@ class _AddNewPageState extends State<AddNewPage> {
                                 : '${_money(_saved!.amount)} was added to ${_saved!.category}.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Color(0xFF48544F),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                               fontSize: 15,
                             ),
                           ),
@@ -188,7 +190,7 @@ class _AddNewPageState extends State<AddNewPage> {
                                 selected: {_type},
                                 showSelectedIcon: false,
                                 style: SegmentedButton.styleFrom(
-                                  selectedBackgroundColor: Color(0xFFE6F4EE),
+                                  selectedBackgroundColor: AppColors.divider,
                                   selectedForegroundColor: _green,
                                 ),
                                 onSelectionChanged: (selection) => setState(() {
@@ -297,7 +299,7 @@ class _AddNewPageState extends State<AddNewPage> {
                                           : Icons.circle_outlined,
                                       color: _category == category.$1
                                           ? _green
-                                          : Color(0xFF8A9690),
+                                          : AppColors.textMuted,
                                     ),
                                     onTap: _saving
                                         ? null
@@ -327,7 +329,7 @@ class _AddNewPageState extends State<AddNewPage> {
                             SizedBox(height: 20),
                             CircleAvatar(
                               radius: 44,
-                              backgroundColor: Color(0xFFE7F5EF),
+                              backgroundColor: AppColors.divider,
                               child: Icon(Icons.check, size: 46, color: _green),
                             ),
                             SizedBox(height: 32),
@@ -388,6 +390,7 @@ class _AddNewPageState extends State<AddNewPage> {
                           child: FilledButton(
                             style: FilledButton.styleFrom(
                               backgroundColor: _green,
+                              foregroundColor: Colors.white,
                             ),
                             onPressed:
                                 _saving || _step == 1 && _category == null
@@ -450,7 +453,12 @@ class _AddNewPageState extends State<AddNewPage> {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Color(0xFF65716C))),
+        Text(
+          label,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
         SizedBox(width: 16),
         Expanded(
           child: Text(

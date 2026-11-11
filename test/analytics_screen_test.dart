@@ -3,8 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('opens category details and returns to the breakdown', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: Scaffold(body: AnalyticsScreen())));
+  testWidgets('switches between chart and list on Insights', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: AnalyticsScreen())),
+    );
+    expect(find.text('Chart view'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    await tester.tap(find.text('List view'));
+    await tester.pump();
+    expect(find.byType(LinearProgressIndicator), findsWidgets);
+    await tester.tap(find.text('Chart view'));
+    await tester.pump();
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('opens category details and returns to the breakdown', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: AnalyticsScreen())),
+    );
     expect(find.text('Insights'), findsOneWidget);
     await tester.tap(find.text('See all'));
     await tester.pump();
@@ -22,7 +40,9 @@ void main() {
   });
 
   testWidgets('shows an empty state for a future year', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: Scaffold(body: AnalyticsScreen())));
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: AnalyticsScreen())),
+    );
     await tester.tap(find.text('Year'));
     await tester.pump();
     await tester.tap(find.byTooltip('Next period'));

@@ -17,6 +17,7 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
+      height: 64,
       color: Theme.of(context).colorScheme.surface,
       surfaceTintColor: Colors.transparent,
       elevation: 12,

@@ -6,6 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('can select appearance before startup settings are loaded', () async {
+    SharedPreferences.setMockInitialValues({});
+    await AppearanceSettings.setMode(ThemeMode.dark);
+    expect(AppearanceSettings.mode.value, ThemeMode.dark);
+    final preferences = await SharedPreferences.getInstance();
+    expect(preferences.getString('appearance'), 'dark');
+  });
+
   test('defaults to the device theme and handles an unknown saved value', () async {
     SharedPreferences.setMockInitialValues({});
     await AppearanceSettings.load();

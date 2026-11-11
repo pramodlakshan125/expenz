@@ -67,13 +67,13 @@ class HomeHeader extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: Color(0xFFE2F0EB),
+                  color: AppColors.divider,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Theme.of(context).colorScheme.outlineVariant,
                   ),
                 ),
-                child: Icon(AppIcons.bell, color: Color(0xFF007F61)),
+                child: Icon(AppIcons.bell, color: AppColors.primary),
               ),
               if (hasNotification)
                 Positioned(

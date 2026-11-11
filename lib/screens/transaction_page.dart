@@ -1,3 +1,4 @@
+import 'package:expenz/constant/colors.dart';
 import 'package:expenz/models/transaction_model.dart';
 import 'package:expenz/constant/app_icons.dart';
 
@@ -20,7 +21,7 @@ class TransactionPage extends StatefulWidget {
 }
 
 class _TransactionPageState extends State<TransactionPage> {
-  static const _green = Color(0xFF007F61);
+  static const _green = AppColors.primary;
   final _search = TextEditingController();
   String _type = 'All';
   DateTimeRange? _range;
@@ -349,7 +350,7 @@ class _TransactionPageState extends State<TransactionPage> {
                                         ).format(entry.key),
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF46534D),
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ),

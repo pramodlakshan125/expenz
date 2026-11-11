@@ -1,3 +1,4 @@
+import 'package:expenz/constant/colors.dart';
 import 'package:expenz/constant/app_icons.dart';
 import 'package:expenz/auth/login.dart';
 
@@ -14,7 +15,7 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  static const _green = Color(0xFF007F61);
+  static const _green = AppColors.primary;
   bool _notifications = true;
   bool _saving = false;
   bool _loggingOut = false;
@@ -47,7 +48,8 @@ class _ProfileState extends State<Profile> {
     if (selected == null) return;
     try {
       await AppearanceSettings.setMode(selected);
-    } catch (_) {
+    } catch (error) {
+      debugPrint('Could not save appearance: $error');
       _message('Could not save appearance. Please try again.');
     }
   }
@@ -197,7 +199,7 @@ class _ProfileState extends State<Profile> {
       color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: ListView(
-          padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 32),
           children: [
             Text(
               'Profile',
@@ -215,7 +217,7 @@ class _ProfileState extends State<Profile> {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: Color(0xFFE7F4EE),
+                      backgroundColor: AppColors.divider,
                       child: Text(
                         initials,
                         style: TextStyle(
@@ -363,8 +365,8 @@ class _ProfileState extends State<Profile> {
                   : Icon(AppIcons.logout),
               label: Text(_loggingOut ? 'Logging out…' : 'Log out'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: Color(0xFFC62828),
-                side: BorderSide(color: Color(0xFFEBCACA)),
+                foregroundColor: AppColors.dangerState,
+                side: BorderSide(color: AppColors.divider),
                 padding: EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -387,7 +389,7 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget _heading(String title) => Padding(
-    padding: EdgeInsets.only(top: 24, bottom: 16),
+    padding: EdgeInsets.only(top: 20, bottom: 12),
     child: Text(
       title,
       style: TextStyle(
@@ -443,12 +445,13 @@ class _ProfileState extends State<Profile> {
     VoidCallback? onTap,
     Widget? trailing,
   }) => ListTile(
-    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+    minTileHeight: 60,
     leading: Container(
       width: 34,
       height: 34,
       decoration: BoxDecoration(
-        color: Color(0xFFE7F4EE),
+        color: AppColors.divider,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, size: 19, color: _green),

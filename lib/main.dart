@@ -22,15 +22,25 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: AppearanceSettings.mode,
       builder: (context, mode, child) => MaterialApp(
+        scrollBehavior: const _AppScrollBehavior(),
         themeMode: mode,
         darkTheme: ThemeData(
           brightness: Brightness.dark,
           fontFamily: 'Inter',
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.primary,
-            brightness: Brightness.dark,
-            primary: const Color(0xFF67DBB2),
+          colorScheme: const ColorScheme.dark(
+            primary: AppColors.primary,
+            onPrimary: AppColors.textOnPrimary,
+            secondary: AppColors.safeState,
+            onSecondary: AppColors.textOnPrimary,
+            secondaryContainer: AppColors.darkCardSurface,
+            onSecondaryContainer: AppColors.textOnPrimary,
+            error: AppColors.dangerState,
             surface: AppColors.darkCardSurface,
+            onSurface: AppColors.textOnPrimary,
+            onSurfaceVariant: AppColors.textMuted,
+            outline: AppColors.textSecondary,
+            outlineVariant: AppColors.textSecondary,
+            surfaceContainerHighest: AppColors.darkCardSurface,
           ),
           scaffoldBackgroundColor: AppColors.darkBackground,
           snackBarTheme: const SnackBarThemeData(
@@ -41,12 +51,20 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           fontFamily: 'Inter',
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.primary,
+          colorScheme: const ColorScheme.light(
             primary: AppColors.primary,
             onPrimary: AppColors.textOnPrimary,
+            secondary: AppColors.safeState,
+            onSecondary: AppColors.textOnPrimary,
+            secondaryContainer: AppColors.divider,
+            onSecondaryContainer: AppColors.textPrimary,
+            error: AppColors.dangerState,
             surface: AppColors.cardSurface,
             onSurface: AppColors.textPrimary,
+            onSurfaceVariant: AppColors.textSecondary,
+            outline: AppColors.textMuted,
+            outlineVariant: AppColors.divider,
+            surfaceContainerHighest: AppColors.divider,
           ),
           scaffoldBackgroundColor: AppColors.background,
           // Floating messages appear above the add button without moving it.
@@ -79,4 +97,20 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Keep pages from stretching or bouncing beyond their content.
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const ClampingScrollPhysics();
+
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
 }

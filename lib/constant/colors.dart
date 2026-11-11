@@ -63,7 +63,7 @@ class AppColors {
   // 6. Optional Dark Mode Colors
   // ---------------------------------------------------------------------------
   static const Color darkBackground = Color(
-    0xFF0F172A,
-  ); // Deep Slate Dark Background
+    0xFF000000,
+  ); // Pure black background
   static const Color darkCardSurface = Color(0xFF1E293B); // Navy Slate Surface
 }

@@ -1,9 +1,10 @@
+import 'package:expenz/constant/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-const _green = Color(0xFF007F61);
+const _green = AppColors.primary;
 
 class GoalsPage extends StatelessWidget {
   const GoalsPage({super.key});
@@ -216,7 +217,7 @@ class _GoalsSectionState extends State<GoalsSection> {
                       LinearProgressIndicator(
                         value: progress,
                         color: _green,
-                        backgroundColor: Color(0xFFE7F4EE),
+                        backgroundColor: AppColors.divider,
                         minHeight: 7,
                         borderRadius: BorderRadius.circular(8),
                       ),

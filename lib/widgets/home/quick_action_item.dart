@@ -1,3 +1,4 @@
+import 'package:expenz/constant/colors.dart';
 import 'package:flutter/material.dart';
 
 class QuickActionItem extends StatelessWidget {
@@ -11,7 +12,7 @@ class QuickActionItem extends StatelessWidget {
     required this.icon,
     required this.label,
     this.onTap,
-    this.color = const Color(0xFF007F61),
+    this.color = AppColors.primary,
   });
 
   @override

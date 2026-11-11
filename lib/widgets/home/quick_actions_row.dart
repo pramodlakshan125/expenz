@@ -1,3 +1,4 @@
+import 'package:expenz/constant/colors.dart';
 import 'package:expenz/constant/app_icons.dart';
 import 'package:expenz/widgets/home/quick_action_item.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ class QuickActionsRow extends StatelessWidget {
             ),
             QuickActionItem(
               icon: Icons.bar_chart_rounded,
-              color: Color(0xFF3C4C52),
+              color: AppColors.textSecondary,
               label: 'Insights',
               onTap: onInsights,
             ),

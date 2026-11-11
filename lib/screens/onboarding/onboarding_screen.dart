@@ -22,7 +22,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F4F9),
+      backgroundColor: AppColors.background,
       body: Column(
         children: [
           Expanded(
@@ -68,7 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     effect: const WormEffect(
                       dotHeight: 10,
                       dotWidth: 10,
-                      activeDotColor: Color(0xFF25A67D),
+                      activeDotColor: AppColors.primary,
                       dotColor: Colors.grey,
                     ),
                   ),

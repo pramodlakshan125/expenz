@@ -1,4 +1,6 @@
+import 'package:expenz/constant/colors.dart';
 import 'dart:math' as math;
+import 'package:expenz/screens/spending_trends.dart';
 import 'package:expenz/constant/app_icons.dart';
 
 import 'package:expenz/data/dummy_transactions.dart';
@@ -6,12 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 const _colors = [
-  Color(0xFFCA7029),
-  Color(0xFF70794B),
-  Color(0xFF3C4C52),
-  Color(0xFF5E77AE),
-  Color(0xFFDEB61B),
-  Color(0xFF8D608C),
+  AppColors.warningState,
+  AppColors.safeState,
+  AppColors.textSecondary,
+  AppColors.textMuted,
+  AppColors.warningState,
+  AppColors.expense,
 ];
 String _money(num value) => 'Rs. ${NumberFormat('#,##0.##').format(value)}';
 
@@ -214,6 +216,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ),
                 SizedBox(height: 22),
                 if (!_breakdown) ...[
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => SpendingTrends(
+                          transactions: DummyTransactions.list,
+                          isSample: true,
+                        ),
+                      ),
+                    ),
+                    icon: const Icon(Icons.show_chart),
+                    label: const Text('Spending trends'),
+                  ),
+                  const SizedBox(height: 12),
                   _segments(
                     ['Week', 'Month', 'Year'],
                     _period,
@@ -246,7 +261,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   Container(
                     padding: EdgeInsets.all(22),
                     decoration: BoxDecoration(
-                      color: Color(0xFF007F61),
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: Column(
@@ -274,14 +289,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     ),
                   ),
                   SizedBox(height: 18),
-                ] else ...[
-                  _segments(
-                    ['Chart view', 'List view'],
-                    _chart ? 'Chart view' : 'List view',
-                    (value) => setState(() => _chart = value == 'Chart view'),
-                  ),
-                  SizedBox(height: 18),
                 ],
+                _segments(
+                  ['Chart view', 'List view'],
+                  _chart ? 'Chart view' : 'List view',
+                  (value) => setState(() => _chart = value == 'Chart view'),
+                ),
+                SizedBox(height: 18),
                 _card(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +333,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           ),
                         )
                       else ...[
-                        if (!_breakdown || _chart) ...[
+                        if (_chart) ...[
                           Center(
                             child: SizedBox(
                               height: _breakdown ? 240 : 180,
@@ -373,8 +387,26 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               categories[i].key,
                               style: TextStyle(fontSize: 14),
                             ),
-                            subtitle: Text(
-                              '${(categories[i].value / total * 100).round()}% of spending',
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${(categories[i].value / total * 100).round()}% of spending',
+                                ),
+                                if (!_chart) ...[
+                                  const SizedBox(height: 8),
+                                  LinearProgressIndicator(
+                                    value: categories[i].value / total,
+                                    color: _colors[i % _colors.length],
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(4),
+                                    minHeight: 6,
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                              ],
                             ),
                             trailing: Text(
                               _money(categories[i].value),
@@ -392,13 +424,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   Container(
                     padding: EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Color(0xFFFFF8DE),
-                      border: Border.all(color: Color(0xFFE2C559)),
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(color: AppColors.warningState),
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Row(
                       children: [
-                        Icon(AppIcons.idea, color: Color(0xFF9F7E00), size: 30),
+                        Icon(
+                          AppIcons.idea,
+                          color: AppColors.warningState,
+                          size: 30,
+                        ),
                         SizedBox(width: 14),
                         Expanded(
                           child: Column(
@@ -477,26 +513,32 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       children: labels
           .map(
             (label) => Expanded(
-              child: Material(
-                color: selected == label
-                    ? Theme.of(context).colorScheme.surface
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(24),
-                child: InkWell(
+              child: Semantics(
+                selected: selected == label,
+                button: true,
+                child: Material(
+                  color: selected == label
+                      ? Theme.of(context).colorScheme.secondaryContainer
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(24),
-                  onTap: () => onChanged(label),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: selected == label
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                        color: selected == label
-                            ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: () => onChanged(label),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: selected == label
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          color: selected == label
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.onSecondaryContainer
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ),

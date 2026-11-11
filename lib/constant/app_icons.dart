@@ -1,3 +1,4 @@
+import 'package:expenz/constant/colors.dart';
 import 'package:flutter/material.dart';
 
 /// Shared filled icons and category colors matching the app's visual language.
@@ -60,13 +61,13 @@ abstract final class AppIcons {
   };
 
   static Color categoryColor(String name) => switch (category(name)) {
-    food => const Color(0xFFCA7029),
-    transport || plane => const Color(0xFF5E77AE),
-    shopping => const Color(0xFF70794B),
-    health => const Color(0xFFD9AF16),
-    bills || laptop => const Color(0xFF3C4C52),
-    entertainment || gift => const Color(0xFF8D608C),
-    _ => const Color(0xFF007F61),
+    food => AppColors.warningState,
+    transport || plane => AppColors.textMuted,
+    shopping => AppColors.safeState,
+    health => AppColors.warningState,
+    bills || laptop => AppColors.textSecondary,
+    entertainment || gift => AppColors.expense,
+    _ => AppColors.primary,
   };
 }
 

@@ -3,11 +3,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AppearanceSettings {
   static final mode = ValueNotifier(ThemeMode.system);
-  static late SharedPreferences _preferences;
 
   static Future<void> load() async {
-    _preferences = await SharedPreferences.getInstance();
-    final saved = _preferences.getString('appearance');
+    final preferences = await SharedPreferences.getInstance();
+    final saved = preferences.getString('appearance');
     mode.value = ThemeMode.values.firstWhere(
       (value) => value.name == saved,
       orElse: () => ThemeMode.system,
@@ -15,7 +14,9 @@ class AppearanceSettings {
   }
 
   static Future<void> setMode(ThemeMode value) async {
-    await _preferences.setString('appearance', value.name);
+    final preferences = await SharedPreferences.getInstance();
+    final saved = await preferences.setString('appearance', value.name);
+    if (!saved) throw StateError('Could not persist appearance');
     mode.value = value;
   }
 
