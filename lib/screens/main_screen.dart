@@ -9,7 +9,7 @@ import 'package:expenz/screens/profile.dart';
 import 'package:expenz/screens/transaction_page.dart';
 import 'package:expenz/widgets/costom_nav_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// The "shell": holds the bottom nav bar, the round middle button,
 /// and shows one tab page at a time.
@@ -92,6 +92,8 @@ class _MainScreenState extends State<MainScreen> {
               : snapshot.connectionState == ConnectionState.waiting
               ? Center(child: CircularProgressIndicator())
               : HomeScreen(
+                  userName:
+                      FirebaseAuth.instance.currentUser?.displayName ?? '',
                   transactions: transactions,
                   onAddExpense: () => _add(),
                   onAddIncome: () => _add(TransactionType.income),

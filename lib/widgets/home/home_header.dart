@@ -16,7 +16,18 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = userName.isNotEmpty ? userName[0].toUpperCase() : '?';
+    final name = userName.trim();
+    final firstName = name.isEmpty
+        ? 'Your account'
+        : name.split(RegExp(r'\s+')).first;
+    final initial = name.isNotEmpty ? firstName[0].toUpperCase() : '?';
+    final hour = DateTime.now().hour;
+    final greeting = hour < 12
+        ? 'Good morning!'
+        : hour < 17
+        ? 'Good afternoon!'
+        : 'Good evening!';
+    final scheme = Theme.of(context).colorScheme;
 
     return Row(
       children: [
@@ -38,7 +49,7 @@ class HomeHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome Back 👋',
+                greeting,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 13,
@@ -46,7 +57,7 @@ class HomeHeader extends StatelessWidget {
               ),
               SizedBox(height: 2),
               Text(
-                userName,
+                firstName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -67,7 +78,7 @@ class HomeHeader extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.divider,
+                  color: scheme.surfaceContainerHighest,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Theme.of(context).colorScheme.outlineVariant,

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 /// The Home tab. It only places the pieces.
 /// Each piece lives in its own file in widgets/home/.
 class HomeScreen extends StatelessWidget {
+  final String userName;
   final List<TransactionModel> transactions;
   final VoidCallback? onAddExpense;
   final VoidCallback? onAddIncome;
@@ -17,6 +18,7 @@ class HomeScreen extends StatelessWidget {
   final VoidCallback? onInsights;
   const HomeScreen({
     super.key,
+    this.userName = '',
     this.transactions = const [],
     this.onAddExpense,
     this.onAddIncome,
@@ -44,7 +46,7 @@ class HomeScreen extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
             // Step 4: header
-            HomeHeader(userName: 'Pramod', hasNotification: true),
+            HomeHeader(userName: userName, hasNotification: true),
             SizedBox(height: 24),
 
             BalanceCard(spentAmount: spentThisMonth, monthlyBudget: 500000),
