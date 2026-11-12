@@ -50,7 +50,7 @@ class QuickActionsRow extends StatelessWidget {
             ),
             QuickActionItem(
               icon: Icons.bar_chart_rounded,
-              color: AppColors.textSecondary,
+              color: AppColors.primary,
               label: 'Insights',
               onTap: onInsights,
             ),

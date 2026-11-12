@@ -352,7 +352,7 @@ class _ProfileState extends State<Profile> {
               ),
             ),
             SizedBox(height: 24),
-            OutlinedButton.icon(
+            TextButton.icon(
               onPressed: user == null || _saving || _loggingOut
                   ? null
                   : _logout,
@@ -364,12 +364,12 @@ class _ProfileState extends State<Profile> {
                     )
                   : Icon(AppIcons.logout),
               label: Text(_loggingOut ? 'Logging out…' : 'Log out'),
-              style: OutlinedButton.styleFrom(
+              style: TextButton.styleFrom(
                 foregroundColor: AppColors.dangerState,
-                side: BorderSide(color: AppColors.divider),
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 padding: EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),
@@ -423,18 +423,18 @@ class _ProfileState extends State<Profile> {
     ),
   );
   Widget _divider() => Padding(
-    padding: EdgeInsets.symmetric(horizontal: 16),
+    padding: EdgeInsets.only(left: 66, right: 16),
     child: Divider(
       height: 1,
-      color: Theme.of(context).colorScheme.outlineVariant,
+      thickness: 0.5,
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
     ),
   );
   Widget _card(Widget child) => Material(
     color: Theme.of(context).colorScheme.surface,
     clipBehavior: Clip.antiAlias,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
-      side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      borderRadius: BorderRadius.circular(14),
     ),
     child: child,
   );
@@ -451,7 +451,7 @@ class _ProfileState extends State<Profile> {
       width: 34,
       height: 34,
       decoration: BoxDecoration(
-        color: AppColors.divider,
+        color: AppColors.primary.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, size: 19, color: _green),

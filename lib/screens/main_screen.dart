@@ -107,7 +107,11 @@ class _MainScreenState extends State<MainScreen> {
             loading: snapshot.connectionState == ConnectionState.waiting,
             hasError: snapshot.hasError,
           ),
-          AnalyticsScreen(),
+          snapshot.hasError
+              ? _transactionError(snapshot.error!)
+              : snapshot.connectionState == ConnectionState.waiting
+              ? Center(child: CircularProgressIndicator())
+              : AnalyticsScreen(transactions: transactions),
           Profile(),
         ];
         return Scaffold(

@@ -1,17 +1,42 @@
-# expenz
+# Expenz
 
-A new Flutter project.
+Flutter expense tracker connected to Firebase project `expenz-4f7ab` for Android
+(application ID `com.expenz`).
 
-## Getting Started
+## Firebase
 
-This project is a starting point for a Flutter application.
+- Firebase Authentication provides email/password registration, login, password
+  reset, and profile names. Email/password sign-in is enabled in the project.
+- Cloud Firestore stores transactions at `users/{uid}/transactions` and savings
+  goals at `users/{uid}/goals`. Home, Transactions, Insights, and spending trends
+  use the signed-in user's saved transactions.
+- `firestore.rules` limits access to each user's own transactions and goals.
+- `lib/firebase_options.dart` and `android/app/google-services.json` contain the
+  Android app configuration. Other platforms are not configured.
 
-A few resources to get you started if this is your first Flutter project:
+Run on an Android device or emulator:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```sh
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+To regenerate configuration or deploy updated database rules:
+
+```sh
+firebase login
+flutterfire configure --project=expenz-4f7ab --platforms=android --android-package-name=com.expenz
+firebase deploy --only firestore:rules --project expenz-4f7ab
+```
+
+Google and Apple login buttons are placeholders. Their providers and platform
+credentials still require separate setup. Storage, push notifications, Analytics,
+and Crashlytics have not been added; the current app does not use those services.
+
+## Validation
+
+```sh
+flutter analyze
+flutter test
+flutter build apk --debug
+```

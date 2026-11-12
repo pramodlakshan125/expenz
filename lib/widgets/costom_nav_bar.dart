@@ -56,7 +56,7 @@ class CustomBottomNav extends StatelessWidget {
             Expanded(
               child: _NavItem(
                 icon: Icons.bar_chart_rounded,
-                label: 'Analytics',
+                label: 'Insights',
                 isActive: currentIndex == 2,
                 onTap: () => onTap(2),
               ),

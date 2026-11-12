@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:expenz/screens/spending_trends.dart';
 import 'package:expenz/constant/app_icons.dart';
 
-import 'package:expenz/data/dummy_transactions.dart';
+import 'package:expenz/models/transaction_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -18,7 +18,9 @@ const _colors = [
 String _money(num value) => 'Rs. ${NumberFormat('#,##0.##').format(value)}';
 
 class AnalyticsScreen extends StatefulWidget {
-  const AnalyticsScreen({super.key});
+  final List<TransactionModel> transactions;
+
+  const AnalyticsScreen({super.key, this.transactions = const []});
 
   @override
   State<AnalyticsScreen> createState() => _AnalyticsScreenState();
@@ -70,7 +72,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     final transactions =
-        DummyTransactions.list
+        widget.transactions
             .where(
               (t) =>
                   !t.isIncome &&
@@ -219,10 +221,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   OutlinedButton.icon(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (_) => SpendingTrends(
-                          transactions: DummyTransactions.list,
-                          isSample: true,
-                        ),
+                        builder: (_) =>
+                            SpendingTrends(transactions: widget.transactions),
                       ),
                     ),
                     icon: const Icon(Icons.show_chart),
@@ -461,7 +461,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ],
                 SizedBox(height: 14),
                 Text(
-                  'Based on your current sample transactions',
+                  'Based on your saved transactions',
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,

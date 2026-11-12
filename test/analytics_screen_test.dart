@@ -1,11 +1,28 @@
 import 'package:expenz/screens/analytics_screen.dart';
+import 'package:expenz/data/dummy_transactions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('switches between chart and list on Insights', (tester) async {
+  testWidgets('does not show sample spending for an empty account', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(home: Scaffold(body: AnalyticsScreen())),
+    );
+    expect(find.text('No expenses in this period.'), findsOneWidget);
+    expect(find.text('Rs. 0'), findsOneWidget);
+    expect(find.text('Food'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('switches between chart and list on Insights', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AnalyticsScreen(transactions: DummyTransactions.list),
+        ),
+      ),
     );
     expect(find.text('Chart view'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsNothing);
@@ -21,7 +38,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: AnalyticsScreen())),
+      MaterialApp(
+        home: Scaffold(
+          body: AnalyticsScreen(transactions: DummyTransactions.list),
+        ),
+      ),
     );
     expect(find.text('Insights'), findsOneWidget);
     await tester.tap(find.text('See all'));
@@ -41,7 +62,11 @@ void main() {
 
   testWidgets('shows an empty state for a future year', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: AnalyticsScreen())),
+      MaterialApp(
+        home: Scaffold(
+          body: AnalyticsScreen(transactions: DummyTransactions.list),
+        ),
+      ),
     );
     await tester.tap(find.text('Year'));
     await tester.pump();
