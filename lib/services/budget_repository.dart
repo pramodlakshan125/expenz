@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'money_account_service.dart';
+import 'package:expenz/models/debt_account.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenz/models/budget_ledger.dart';
@@ -60,7 +62,7 @@ class FirestoreBudgetRepository implements BudgetRepository {
       if (!active ||
           output.isClosed ||
           settings == null ||
-          snapshots.length != 5) {
+          snapshots.length != 8) {
         return;
       }
       try {
@@ -133,13 +135,57 @@ class FirestoreBudgetRepository implements BudgetRepository {
                 ),
           );
         }
+        final debts = snapshots['debt_accounts']!.docs
+            .map((doc) => DebtAccount.fromData(doc.id, doc.data()))
+            .toList();
+        final debtEntries = snapshots['debt_entries']!.docs
+            .map((doc) => DebtEntry.fromData(doc.id, doc.data()))
+            .toList();
+        final transactions = snapshots['transactions']!.docs
+            .map((doc) => BudgetFirestoreCodec.transaction(doc.id, doc.data()))
+            .toList();
+        // Listeners can deliver different halves of a batch in separate callbacks.
+        // Only publish when debt totals, cash flows, and credit purchases agree.
+        for (final debt in debts) {
+          final entries = debtEntries
+              .where((entry) => entry.debtId == debt.id)
+              .toList();
+          if (!entries.any((entry) => entry.id == debt.lastEntryId)) return;
+          final principal = entries
+              .where((entry) => entry.action != DebtAction.repayment)
+              .fold<int>(0, (total, entry) => total + entry.amountMinor);
+          final repaid = entries
+              .where((entry) => entry.action == DebtAction.repayment)
+              .fold<int>(0, (total, entry) => total + entry.amountMinor);
+          if (principal != debt.principalMinor || repaid != debt.repaidMinor) {
+            return;
+          }
+        }
+        for (final entry in debtEntries) {
+          if (!debts.any((debt) => debt.id == entry.debtId)) return;
+          if (entry.action == DebtAction.charge &&
+              !transactions.any(
+                (transaction) =>
+                    transaction.id == entry.id && transaction.isCreditPurchase,
+              )) {
+            return;
+          }
+        }
+        if (transactions.any(
+          (transaction) =>
+              transaction.isCreditPurchase &&
+              !debtEntries.any((entry) => entry.id == transaction.id),
+        )) {
+          return;
+        }
         final ledger = BudgetLedger(
-          settings: settings!.settings,
-          transactions: snapshots['transactions']!.docs
-              .map(
-                (doc) => BudgetFirestoreCodec.transaction(doc.id, doc.data()),
-              )
+          accounts: snapshots['money_accounts']!.docs
+              .map((doc) => MoneyAccountService.decode(doc.id, doc.data()))
               .toList(),
+          settings: settings!.settings,
+          transactions: transactions,
+          debts: debts,
+          debtEntries: debtEntries,
           settlements: settlements,
           walletEntries: entries,
           goals: goals,
@@ -180,6 +226,9 @@ class FirestoreBudgetRepository implements BudgetRepository {
             'wallet_entries',
             'goals',
             'goal_contributions',
+            'money_accounts',
+            'debt_accounts',
+            'debt_entries',
           ]) {
             subscriptions.add(
               _user

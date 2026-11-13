@@ -42,6 +42,7 @@ class TransactionService {
             type: data['type'] == 'income'
                 ? TransactionType.income
                 : TransactionType.expense,
+            accountId: data['accountId'] as String?,
           );
         }).toList(),
       );
@@ -53,5 +54,6 @@ class TransactionService {
         'amount': transaction.amount,
         'date': Timestamp.fromDate(transaction.date),
         'type': transaction.type.name,
+        if (transaction.accountId != null) 'accountId': transaction.accountId,
       });
 }

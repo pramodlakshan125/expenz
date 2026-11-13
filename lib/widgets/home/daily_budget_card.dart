@@ -11,49 +11,79 @@ class DailyBudgetCard extends StatelessWidget {
   const DailyBudgetCard({super.key, required this.day, this.onEditLimit});
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: EdgeInsets.zero,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-    child: Padding(
-      padding: const EdgeInsets.all(22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.today_outlined, color: AppColors.primary),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Daily spending',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final ratio = day.adjustedLimitMinor == 0
+        ? (day.spentMinor > 0 ? 1.0 : 0.0)
+        : (day.spentMinor / day.adjustedLimitMinor).clamp(0.0, 1.0);
+    final tint = ratio <= 0.7
+        ? Color.lerp(AppColors.primary, AppColors.warningState, ratio / 0.7)!
+        : Color.lerp(
+            AppColors.warningState,
+            AppColors.dangerState,
+            (ratio - 0.7) / 0.3,
+          )!;
+    final background = Color.alphaBlend(
+      tint.withValues(
+        alpha: theme.brightness == Brightness.dark ? 0.09 : 0.055,
+      ),
+      theme.colorScheme.surface,
+    );
+    return Card(
+      color: background,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: BorderSide(
+          color: Color.alphaBlend(
+            tint.withValues(alpha: 0.12),
+            theme.colorScheme.outlineVariant,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.today_outlined, color: AppColors.primary),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Daily spending',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Change daily target',
+                  onPressed: onEditLimit,
+                  icon: const Icon(Icons.tune_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            DailyProgressBar(
+              spentMinor: day.spentMinor,
+              limitMinor: day.adjustedLimitMinor,
+            ),
+            if (day.carriedBeforeMinor > 0) ...[
+              const SizedBox(height: 14),
+              Text(
+                'Your limit is ${moneyMinor(day.adjustedLimitMinor)} today because '
+                'of ${moneyMinor(day.carriedBeforeMinor)} overspend earlier.',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 12,
                 ),
               ),
-              IconButton(
-                tooltip: 'Change daily target',
-                onPressed: onEditLimit,
-                icon: const Icon(Icons.tune_rounded),
-              ),
             ],
-          ),
-          const SizedBox(height: 16),
-          DailyProgressBar(
-            spentMinor: day.spentMinor,
-            limitMinor: day.adjustedLimitMinor,
-          ),
-          if (day.carriedBeforeMinor > 0) ...[
-            const SizedBox(height: 14),
-            Text(
-              'Your limit is ${moneyMinor(day.adjustedLimitMinor)} today because '
-              'of ${moneyMinor(day.carriedBeforeMinor)} overspend earlier.',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 12,
-              ),
-            ),
           ],
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

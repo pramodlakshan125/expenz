@@ -1,4 +1,5 @@
 import 'package:expenz/auth/login.dart';
+import 'package:expenz/screens/onboarding/first_launch_gate.dart';
 import 'package:expenz/constant/colors.dart';
 import 'package:expenz/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -126,22 +127,24 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        home: StreamBuilder<User?>(
-          stream: FirebaseAuth.instance.userChanges(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            }
-            // 1. If Firebase finds a saved user on the phone -> Go to Home Page!
-            if (snapshot.hasData) {
-              return const MainScreen();
-            }
+        home: FirstLaunchGate(
+          builder: (context) => StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.userChanges(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              // 1. If Firebase finds a saved user on the phone -> Go to Home Page!
+              if (snapshot.hasData) {
+                return const MainScreen();
+              }
 
-            // 2. If NO user is saved -> Go to Login Page!
-            return const LogIn();
-          },
+              // 2. If NO user is saved -> Go to Login Page!
+              return const LogIn();
+            },
+          ),
         ),
       ),
     );

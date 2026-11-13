@@ -1,4 +1,6 @@
 import 'daily_budget_settings.dart';
+import 'money_account.dart';
+import 'debt_account.dart';
 import 'daily_settlement.dart';
 import 'transaction_model.dart';
 import 'wallet_entry.dart';
@@ -7,6 +9,9 @@ import 'goal_contribution.dart';
 
 class BudgetLedger {
   final DailyBudgetSettings? settings;
+  final List<MoneyAccount> accounts;
+  final List<DebtAccount> debts;
+  final List<DebtEntry> debtEntries;
   final List<TransactionModel> transactions;
   final List<DailySettlement> settlements;
   final List<WalletEntry> walletEntries;
@@ -18,6 +23,9 @@ class BudgetLedger {
 
   BudgetLedger({
     required this.settings,
+    List<MoneyAccount> accounts = const [],
+    List<DebtAccount> debts = const [],
+    List<DebtEntry> debtEntries = const [],
     required List<TransactionModel> transactions,
     required List<DailySettlement> settlements,
     required List<WalletEntry> walletEntries,
@@ -26,7 +34,10 @@ class BudgetLedger {
     required this.readyForSettlement,
     required this.hasPendingWrites,
     required this.isFromCache,
-  }) : transactions = List.unmodifiable(transactions),
+  }) : accounts = List.unmodifiable(accounts),
+       debts = List.unmodifiable(debts),
+       debtEntries = List.unmodifiable(debtEntries),
+       transactions = List.unmodifiable(transactions),
        settlements = List.unmodifiable(settlements),
        walletEntries = List.unmodifiable(walletEntries),
        goals = List.unmodifiable(goals),
@@ -57,8 +68,12 @@ class BudgetLedger {
       walletEntries.fold(0, (sum, entry) => sum + entry.signedAmountMinor);
 
   int get actualBalanceMinor => transactions.fold(
-    0,
-    (sum, entry) =>
-        sum + (entry.isIncome ? 1 : -1) * (entry.amount * 100).round(),
+    accounts.fold<int>(0, (sum, account) => sum + account.openingBalanceMinor) +
+        debtEntries.fold<int>(0, (sum, entry) => sum + entry.cashChangeMinor),
+    (sum, entry) => sum + entry.cashChangeMinor,
   );
+
+  int debtBalanceMinor(DebtKind kind) => debts
+      .where((debt) => debt.kind == kind)
+      .fold<int>(0, (sum, debt) => sum + debt.remainingMinor);
 }

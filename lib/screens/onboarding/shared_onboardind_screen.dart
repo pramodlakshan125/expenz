@@ -1,11 +1,9 @@
-import 'package:expenz/constant/colors.dart';
 import 'package:flutter/material.dart';
 
 class SharedOnboardindScreen extends StatelessWidget {
   final String title;
   final String imagePath;
   final String description;
-
   const SharedOnboardindScreen({
     super.key,
     required this.title,
@@ -14,40 +12,39 @@ class SharedOnboardindScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(height: 70),
-
-        Align(
-          alignment: Alignment.center,
-          child: Image.asset(
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        children: [
+          Image.asset(
             imagePath,
-            width: 400,
-            height: 400,
-            fit: BoxFit.cover,
+            width: 320,
+            height: (constraints.maxHeight * 0.55).clamp(120.0, 320.0),
+            fit: BoxFit.contain,
           ),
-        ),
-        const SizedBox(height: 30),
-
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 26,
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
+          const SizedBox(height: 24),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 26,
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(
+          const SizedBox(height: 16),
+          Text(
             description,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 16,
+              height: 1.5,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
-      ],
-    );
-  }
+        ],
+      ),
+    ),
+  );
 }

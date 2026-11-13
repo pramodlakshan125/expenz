@@ -179,5 +179,6 @@ class BudgetFirestoreCodec {
         amount: money(data, 'amount') / 100,
         date: (data['date'] as Timestamp).toDate(),
         type: TransactionType.values.byName(data['type'] as String),
+        accountId: data['accountId'] as String?,
       );
 }

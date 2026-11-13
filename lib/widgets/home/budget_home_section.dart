@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:expenz/services/money_account_service.dart';
+import 'package:expenz/models/debt_account.dart';
+import 'debts_sheet.dart';
 
 import 'package:expenz/services/budget_controller.dart';
 import 'package:expenz/services/budget_repository.dart';
@@ -6,12 +9,11 @@ import 'package:expenz/services/daily_budget_planner.dart';
 import 'package:expenz/services/transaction_service.dart';
 import 'package:flutter/material.dart';
 import 'balance_card.dart';
-import 'balance_correction_sheet.dart';
+import 'accounts_sheet.dart';
 import 'daily_limit_sheet.dart';
 import 'settlement_sheet.dart';
-import 'wallet_card.dart';
+import 'funds_summary.dart';
 import 'settlement_history_sheet.dart';
-import 'savings_transfer_sheet.dart';
 
 class BudgetHomeSection extends StatefulWidget {
   final bool isActive;
@@ -27,6 +29,7 @@ class _BudgetHomeSectionState extends State<BudgetHomeSection>
   late final BudgetController _controller;
   StreamSubscription<Object>? _transactionErrors;
   StreamSubscription<Object>? _savingsErrors;
+  StreamSubscription<Object>? _accountErrors;
   bool _reviewOpen = false;
   bool _limitOpen = false;
   String? _promptedOnDay;
@@ -39,6 +42,11 @@ class _BudgetHomeSectionState extends State<BudgetHomeSection>
       repository: widget.repository ?? FirestoreBudgetRepository(),
     )..addListener(_changed);
     _controller.start();
+    _accountErrors = MoneyAccountService.writeErrors.listen((_) {
+      _message(
+        'An account balance could not sync. Check your accounts and retry.',
+      );
+    });
     _transactionErrors = TransactionService.writeErrors.listen((_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -127,38 +135,24 @@ class _BudgetHomeSectionState extends State<BudgetHomeSection>
     }
   }
 
-  Future<void> _correctBalance() async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) => BalanceCorrectionSheet(controller: _controller),
-    );
-    if (saved == true) _message('Balance adjustment saved on this phone.');
-  }
-
-  Future<void> _savingsTransfer({bool toGoal = false}) async {
-    final saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) =>
-          SavingsTransferSheet(controller: _controller, toGoal: toGoal),
-    );
-    if (saved == true) {
-      _message(
-        toGoal
-            ? 'Wallet transfer saved on this phone.'
-            : 'Wallet top-up saved on this phone.',
-      );
-    }
-  }
-
+  Future<void> _accounts() => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (_) => AccountsSheet(controller: _controller),
+  );
+  Future<void> _debts(DebtKind kind) => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (_) => DebtsSheet(controller: _controller, kind: kind),
+  );
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_transactionErrors?.cancel());
     unawaited(_savingsErrors?.cancel());
+    unawaited(_accountErrors?.cancel());
     _controller.removeListener(_changed);
     _controller.dispose();
     super.dispose();
@@ -266,15 +260,11 @@ class _BudgetHomeSectionState extends State<BudgetHomeSection>
             ],
           ],
           const SizedBox(height: 16),
-          WalletCard(
-            walletBalanceMinor: ledger.walletBalanceMinor,
-            actualBalanceMinor: ledger.actualBalanceMinor,
-            onAdjustBalance: _controller.canAct ? _correctBalance : null,
-            onAddToWallet: _controller.canAct ? () => _savingsTransfer() : null,
-            onTransferToGoal: _controller.canAct
-                ? () => _savingsTransfer(toGoal: true)
-                : null,
-            availableToSaveMinor: ledger.availableToSaveMinor,
+          FundsSummary(
+            ledger: ledger,
+            today: _controller.clock(),
+            onAccounts: _controller.canAct ? _accounts : null,
+            onDebts: _controller.canAct ? _debts : null,
           ),
           TextButton.icon(
             onPressed: () => showModalBottomSheet<void>(

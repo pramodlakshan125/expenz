@@ -7,6 +7,7 @@ class TransactionModel {
   final double amount;
   final DateTime date;
   final TransactionType type;
+  final String? accountId;
 
   const TransactionModel({
     required this.id,
@@ -15,7 +16,11 @@ class TransactionModel {
     required this.amount,
     required this.date,
     required this.type,
+    this.accountId,
   });
 
   bool get isIncome => type == TransactionType.income;
+  bool get isCreditPurchase => accountId?.startsWith('credit:') ?? false;
+  int get cashChangeMinor =>
+      isCreditPurchase ? 0 : (isIncome ? 1 : -1) * (amount * 100).round();
 }

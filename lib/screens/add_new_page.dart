@@ -1,4 +1,7 @@
 import 'package:expenz/constant/colors.dart';
+import 'dart:async';
+import 'package:expenz/models/money_account.dart';
+import 'package:expenz/services/money_account_service.dart';
 import 'package:expenz/models/transaction_model.dart';
 import 'package:expenz/services/transaction_service.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +14,12 @@ import 'package:intl/intl.dart';
 class AddNewPage extends StatefulWidget {
   final TransactionType initialType;
   final Future<void> Function(TransactionModel)? onSave;
+  final List<MoneyAccount> initialAccounts;
   const AddNewPage({
     super.key,
     this.initialType = TransactionType.expense,
     this.onSave,
+    this.initialAccounts = const [],
   });
 
   @override
@@ -43,11 +48,42 @@ class _AddNewPageState extends State<AddNewPage> {
     TransactionType.income: _incomes.map((item) => item.$1).toList(),
   };
   bool _categoriesReady = false;
+  List<MoneyAccount> _accounts = [];
+  String _accountId = 'cash';
+  bool _accountsReady = false;
+  StreamSubscription<List<MoneyAccount>>? _accountsSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadCategories();
+    if (widget.onSave != null) {
+      _accounts = widget.initialAccounts
+          .where((account) => account.id != 'cash')
+          .toList();
+      _accountsReady = true;
+    } else {
+      _accountsSubscription = MoneyAccountService().watch().listen(
+        (accounts) {
+          if (!mounted) return;
+          setState(() {
+            _accounts = accounts
+                .where((account) => account.id != 'cash')
+                .toList();
+            _accountsReady = true;
+          });
+        },
+        onError: (Object error) {
+          if (mounted) {
+            setState(() {
+              _accountsReady = false;
+              _error =
+                  'Could not load accounts. Reopen this page to try again.';
+            });
+          }
+        },
+      );
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -243,13 +279,14 @@ class _AddNewPageState extends State<AddNewPage> {
 
   @override
   void dispose() {
+    unawaited(_accountsSubscription?.cancel());
     _amount.dispose();
     _note.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
-    if (_saving) return;
+    if (_saving || !_accountsReady) return;
     if (!_value.isFinite || _value <= 0) {
       setState(() => _error = 'Enter an amount greater than zero.');
       return;
@@ -282,6 +319,7 @@ class _AddNewPageState extends State<AddNewPage> {
         now.second,
       ),
       type: _type,
+      accountId: _accountId,
     );
     try {
       if (widget.onSave != null) {
@@ -433,6 +471,33 @@ class _AddNewPageState extends State<AddNewPage> {
                                   onChanged: (_) =>
                                       setState(() => _error = null),
                                 ),
+                                const SizedBox(height: 20),
+                                _label(income ? 'Receive into' : 'Pay from'),
+                                DropdownButtonFormField<String>(
+                                  initialValue: _accountId,
+                                  isExpanded: true,
+                                  decoration: _input('Choose account'),
+                                  items: [
+                                    const DropdownMenuItem(
+                                      value: 'cash',
+                                      child: Text('Cash in hand'),
+                                    ),
+                                    for (final account in _accounts)
+                                      DropdownMenuItem(
+                                        value: account.id,
+                                        child: Text(account.name),
+                                      ),
+                                  ],
+                                  onChanged: _saving || !_accountsReady
+                                      ? null
+                                      : (value) =>
+                                            setState(() => _accountId = value!),
+                                ),
+                                if (!_accountsReady)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 8),
+                                    child: Text('Loading accounts…'),
+                                  ),
                                 const SizedBox(height: 24),
                                 _label(
                                   income
@@ -504,7 +569,7 @@ class _AddNewPageState extends State<AddNewPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: _saving
+                        onPressed: _saving || !_accountsReady
                             ? null
                             : saved
                             ? () => Navigator.pop(context)

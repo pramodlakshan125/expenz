@@ -2,142 +2,131 @@ import 'package:expenz/auth/login.dart';
 import 'package:expenz/constant/colors.dart';
 import 'package:expenz/data/onboarding_data.dart';
 import 'package:expenz/screens/onboarding/shared_onboardind_screen.dart';
-import 'package:expenz/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
-
+  final Future<void> Function()? onComplete;
+  const OnboardingScreen({super.key, this.onComplete});
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  //page controller for pageview
-  final PageController _pageController = PageController();
+  final _pageController = PageController();
   int _currentPage = 0;
-  bool showDetailsPage = false;
+  bool _finishing = false;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _finish() async {
+    if (_finishing) return;
+    setState(() => _finishing = true);
+    try {
+      if (widget.onComplete != null) {
+        await widget.onComplete!();
+      } else {
+        final preferences = await SharedPreferences.getInstance();
+        if (!await preferences.setBool('onboarding_completed', true)) {
+          throw StateError('Save failed');
+        }
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute<void>(builder: (_) => const LogIn()),
+          );
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _finishing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not save. Please try again.')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final pages = OnboardingData.onboardingDataList;
+    final last = _currentPage == pages.length - 1;
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                //onboard
-                PageView(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentPage = index;
-                      showDetailsPage = index == 2;
-                    });
-                  },
-                  children: [
-                    SharedOnboardindScreen(
-                      title: OnboardingData.onboardingDataList[0].title,
-                      imagePath: OnboardingData.onboardingDataList[0].imagePath,
-                      description:
-                          OnboardingData.onboardingDataList[0].description,
-                    ),
-                    SharedOnboardindScreen(
-                      title: OnboardingData.onboardingDataList[1].title,
-                      imagePath: OnboardingData.onboardingDataList[1].imagePath,
-                      description:
-                          OnboardingData.onboardingDataList[1].description,
-                    ),
-                    SharedOnboardindScreen(
-                      title: OnboardingData.onboardingDataList[2].title,
-                      imagePath: OnboardingData.onboardingDataList[2].imagePath,
-                      description:
-                          OnboardingData.onboardingDataList[2].description,
-                    ),
-                  ],
-                ),
-
-                //page indicator
-                Container(
-                  alignment: const Alignment(0, 0.6),
-                  child: SmoothPageIndicator(
-                    controller: _pageController,
-                    count: OnboardingData.onboardingDataList.length,
-                    effect: const WormEffect(
-                      dotHeight: 10,
-                      dotWidth: 10,
-                      activeDotColor: AppColors.primary,
-                      dotColor: Colors.grey,
-                    ),
-                  ),
-                ),
-
-                //navigation button
-                Positioned(
-                  bottom: 25,
-                  left: 0,
-                  right: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(30),
-                    child: !showDetailsPage
-                        ? GestureDetector(
-                            onTap: () {
-                              _pageController.animateToPage(
-                                _pageController.page!.toInt() + 1,
-                                duration: const Duration(milliseconds: 400),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            child: CustomButton(
-                              buttonName: "Next",
-                              buttonColor: AppColors.primary,
-                            ),
-                          )
-                        : GestureDetector(
-                            onTap: () {
-                              //navigate to the user data screen
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => LogIn(),
-                                ),
-                              );
-                            },
-                            child: CustomButton(
-                              buttonName: "Get Start",
-                              buttonColor: AppColors.primary,
-                            ),
-                          ),
-                  ),
-                ),
-                //Skip button
-                if (!showDetailsPage)
-                  Positioned(
-                    top: 70,
-                    right: 20,
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => LogIn()),
-                        );
-                      },
-                      child: const Text(
-                        "Skip",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _finishing ? null : _finish,
+                child: const Text('Skip'),
+              ),
             ),
-          ),
-        ],
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (page) => setState(() => _currentPage = page),
+                children: [
+                  for (final page in pages)
+                    SharedOnboardindScreen(
+                      title: page.title,
+                      imagePath: page.imagePath,
+                      description: page.description,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SmoothPageIndicator(
+              controller: _pageController,
+              count: pages.length,
+              effect: WormEffect(
+                dotHeight: 8,
+                dotWidth: 8,
+                activeDotColor: AppColors.primary,
+                dotColor: Theme.of(context).colorScheme.outlineVariant,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _finishing
+                      ? null
+                      : last
+                      ? _finish
+                      : () => _pageController.nextPage(
+                          duration: MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(48, 52),
+                  ),
+                  child: _finishing
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(last ? 'Get started' : 'Next'),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

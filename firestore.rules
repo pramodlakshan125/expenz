@@ -40,7 +40,118 @@ service cloud.firestore {
     }
 
     match /users/{userId}/transactions/{transactionId} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && (!isCreditPurchase(request.resource.data)
+          || validCreditTransaction(userId, transactionId, request.resource.data));
+      allow update: if isOwner(userId) && !isCreditPurchase(resource.data)
+        && !isCreditPurchase(request.resource.data);
+      allow delete: if isOwner(userId) && !isCreditPurchase(resource.data);
+    }
+
+    function isCreditPurchase(data) {
+      return 'accountId' in data && data.accountId is string && data.accountId.matches('^credit:.*$');
+    }
+
+    function validCreditTransaction(userId, entryId, data) {
+      let entry = getAfter(/databases/$(database)/documents/users/$(userId)/debt_entries/$(entryId)).data;
+      return entry.action == 'charge' && entry.kind == 'creditCard'
+        && data.type == 'expense' && data.accountId == 'credit:' + entry.debtId
+        && data.amount == entry.amountMinor / 100.0 && data.date == entry.date;
+    }
+
+    match /users/{userId}/money_accounts/{accountId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.keys().hasAll(['name', 'openingBalanceMinor'])
+        && request.resource.data.keys().hasOnly(['name', 'openingBalanceMinor'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 40
+        && request.resource.data.openingBalanceMinor is int
+        && request.resource.data.openingBalanceMinor >= -9007199254740991
+        && request.resource.data.openingBalanceMinor <= 9007199254740991;
+    }
+
+    function validDebt(data) {
+      return data.keys().hasAll(['name', 'kind', 'principalMinor', 'repaidMinor', 'createdAt', 'lastEntryId'])
+        && data.keys().hasOnly(['name', 'kind', 'principalMinor', 'repaidMinor', 'createdAt', 'lastEntryId'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 40
+        && data.kind in ['receivable', 'payable', 'creditCard']
+        && data.principalMinor is int && data.principalMinor >= 0 && data.principalMinor <= 9007199254740991
+        && (data.kind == 'creditCard' || data.principalMinor > 0)
+        && data.repaidMinor is int && data.repaidMinor >= 0 && data.repaidMinor <= data.principalMinor
+        && data.createdAt is timestamp && data.createdAt <= request.time
+        && data.lastEntryId is string && data.lastEntryId.size() > 0;
+    }
+
+    function validDebtEntry(data) {
+      return data.keys().hasAll(['debtId', 'kind', 'action', 'amountMinor', 'accountId', 'movesCash', 'date'])
+        && data.keys().hasOnly(['debtId', 'kind', 'action', 'amountMinor', 'accountId', 'movesCash', 'date'])
+        && data.debtId is string && data.debtId.size() > 0
+        && data.kind in ['receivable', 'payable', 'creditCard']
+        && data.action in ['opening', 'repayment', 'charge']
+        && data.amountMinor is int && data.amountMinor >= 0 && data.amountMinor <= 9007199254740991
+        && (data.amountMinor > 0 || (data.kind == 'creditCard' && data.action == 'opening'))
+        && data.accountId is string && data.accountId.size() > 0
+        && data.movesCash is bool && data.date is timestamp && data.date <= request.time;
+    }
+
+    function debtOpeningMatches(userId, debtId, data) {
+      let entry = getAfter(/databases/$(database)/documents/users/$(userId)/debt_entries/$(debtId)).data;
+      return data.lastEntryId == debtId && data.repaidMinor == 0
+        && validDebtEntry(entry) && entry.debtId == debtId && entry.kind == data.kind
+        && entry.action == 'opening' && entry.amountMinor == data.principalMinor
+        && entry.date == data.createdAt && (data.kind != 'creditCard' || entry.movesCash == false);
+    }
+
+    function debtUpdateMatches(userId, debtId, before, after) {
+      let entryId = after.lastEntryId;
+      let entry = getAfter(/databases/$(database)/documents/users/$(userId)/debt_entries/$(entryId)).data;
+      return after.name == before.name && after.kind == before.kind && after.createdAt == before.createdAt
+        && !exists(/databases/$(database)/documents/users/$(userId)/debt_entries/$(entryId))
+        && validDebtEntry(entry) && entry.debtId == debtId && entry.kind == after.kind
+        && entry.date >= after.createdAt
+        && ((entry.action == 'repayment' && entry.movesCash == true
+            && after.principalMinor == before.principalMinor
+            && after.repaidMinor == before.repaidMinor + entry.amountMinor)
+          || (entry.action == 'charge' && after.kind == 'creditCard' && entry.movesCash == false
+            && after.principalMinor == before.principalMinor + entry.amountMinor
+            && after.repaidMinor == before.repaidMinor));
+    }
+
+    match /users/{userId}/debt_accounts/{debtId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && validDebt(request.resource.data)
+        && debtOpeningMatches(userId, debtId, request.resource.data);
+      allow update: if isOwner(userId) && validDebt(request.resource.data)
+        && debtUpdateMatches(userId, debtId, resource.data, request.resource.data);
+    }
+
+    function creditPurchaseMatches(userId, entryId, entry) {
+      let purchase = getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(entryId)).data;
+      return entry.accountId == 'credit:' + entry.debtId
+        && purchase.type == 'expense' && purchase.amount == entry.amountMinor / 100.0
+        && purchase.accountId == entry.accountId && purchase.date == entry.date;
+    }
+
+    function debtEntryMatches(userId, entryId, data) {
+      let path = /databases/$(database)/documents/users/$(userId)/debt_accounts/$(data.debtId);
+      let after = getAfter(path).data;
+      return after.lastEntryId == entryId && after.kind == data.kind
+        && data.date >= after.createdAt
+        && (data.action == 'opening'
+          ? entryId == data.debtId && !exists(path) && debtOpeningMatches(userId, data.debtId, after)
+          : exists(path) && debtUpdateMatches(userId, data.debtId, get(path).data, after))
+        && (data.action != 'charge' || creditPurchaseMatches(userId, entryId, data))
+        && (!data.movesCash || data.accountId == 'cash'
+          || exists(/databases/$(database)/documents/users/$(userId)/money_accounts/$(data.accountId)));
+    }
+
+    match /users/{userId}/debt_entries/{entryId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && validDebtEntry(request.resource.data)
+        && debtEntryMatches(userId, entryId, request.resource.data);
     }
 
     match /users/{userId}/goals/{goalId} {
