@@ -1,6 +1,6 @@
+import 'package:expenz/constant/colors.dart';
 import 'package:expenz/models/transaction_model.dart';
 import 'package:expenz/services/transaction_service.dart';
-import 'package:expenz/constant/colors.dart';
 import 'package:expenz/screens/add_new_page.dart';
 import 'package:expenz/screens/analytics_screen.dart';
 import 'package:expenz/screens/home_screen.dart';
@@ -92,6 +92,7 @@ class _MainScreenState extends State<MainScreen> {
               : snapshot.connectionState == ConnectionState.waiting
               ? Center(child: CircularProgressIndicator())
               : HomeScreen(
+                  isActive: _currentIndex == 0,
                   userName:
                       FirebaseAuth.instance.currentUser?.displayName ?? '',
                   transactions: transactions,
@@ -123,9 +124,11 @@ class _MainScreenState extends State<MainScreen> {
           // Round button in the middle of the bar
           floatingActionButton: FloatingActionButton(
             onPressed: () => _add(),
-            shape: CircleBorder(),
+            tooltip: 'Add transaction',
             backgroundColor: AppColors.primary,
-            child: Icon(Icons.add, color: Colors.white),
+            foregroundColor: Colors.white,
+            shape: const CircleBorder(),
+            child: Icon(Icons.add),
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,

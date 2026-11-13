@@ -1,8 +1,23 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:expenz/models/transaction_model.dart';
 
 class TransactionService {
+  static final _errors = StreamController<Object>.broadcast();
+  static Stream<Object> get writeErrors => _errors.stream;
+
+  /// Firestore updates its local cache immediately; do not wait for its server
+  /// acknowledgement in an offline UI. Keep listening for rejected writes.
+  void queue(TransactionModel transaction) {
+    unawaited(
+      add(transaction).catchError((Object error, StackTrace stack) {
+        _errors.add(error);
+      }),
+    );
+  }
+
   CollectionReference<Map<String, dynamic>> get _collection {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw StateError('Please sign in to save transactions.');

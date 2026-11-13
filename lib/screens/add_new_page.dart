@@ -2,6 +2,9 @@ import 'package:expenz/constant/colors.dart';
 import 'package:expenz/models/transaction_model.dart';
 import 'package:expenz/services/transaction_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/semantics.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
@@ -35,10 +38,201 @@ class _AddNewPageState extends State<AddNewPage> {
     ('Gift', Icons.card_giftcard, AppColors.expense),
     ('Other', Icons.grid_view_rounded, AppColors.textSecondary),
   ];
+  final Map<TransactionType, List<String>> _categories = {
+    TransactionType.expense: _expenses.map((item) => item.$1).toList(),
+    TransactionType.income: _incomes.map((item) => item.$1).toList(),
+  };
+  bool _categoriesReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      setState(() {
+        for (final type in TransactionType.values) {
+          _categories[type] =
+              preferences.getStringList('categories.${type.name}') ??
+              _categories[type]!;
+        }
+        _categoriesReady = true;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error =
+              'Could not load categories. Reopen this page to try again.',
+        );
+      }
+    }
+  }
+
+  Future<bool> _storeCategories(
+    TransactionType type,
+    List<String> values,
+  ) async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      if (!await preferences.setStringList('categories.${type.name}', values)) {
+        throw StateError('Save failed');
+      }
+      if (!mounted) return false;
+      setState(() => _categories[type] = values);
+      return true;
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Could not save categories. Please try again.');
+      }
+      return false;
+    }
+  }
+
+  Future<void> _addCategory() async {
+    final type = _type;
+    var enteredName = '';
+    String? error;
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, update) => AlertDialog(
+          title: const Text('New category'),
+          content: TextField(
+            onChanged: (value) => enteredName = value,
+            autofocus: true,
+            maxLength: 30,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              labelText: 'Category name',
+              hintText: 'e.g. Daily coffee',
+              errorText: error,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = enteredName.trim();
+                if (value.isEmpty) {
+                  update(() => error = 'Enter a category name.');
+                  return;
+                }
+                if (_categories[type]!.any(
+                  (name) => name.toLowerCase() == value.toLowerCase(),
+                )) {
+                  update(() => error = 'This category already exists.');
+                  return;
+                }
+                Navigator.pop(context, value);
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      ),
+    );
+    // The dialog route can still be animating out with its text field attached.
+    if (name == null || !mounted) return;
+    if (await _storeCategories(type, [..._categories[type]!, name]) &&
+        mounted) {
+      setState(() {
+        _category = name;
+        _error = null;
+      });
+    }
+  }
+
+  Future<void> _deleteCategory(String name) async {
+    if (_saving || !_categoriesReady) return;
+    final type = _type;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete "$name"?'),
+        content: const Text(
+          'This removes the category from your choices. Existing transactions stay unchanged.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    if (await _storeCategories(
+          type,
+          _categories[type]!.where((value) => value != name).toList(),
+        ) &&
+        mounted) {
+      setState(() {
+        if (_category == name) _category = null;
+      });
+    }
+  }
+
+  Widget _categoryChip(String name) {
+    final colors = Theme.of(context).colorScheme;
+    return Semantics(
+      customSemanticsActions: {
+        const CustomSemanticsAction(label: 'Delete category'): () =>
+            _deleteCategory(name),
+      },
+      child: RawGestureDetector(
+        gestures: {
+          LongPressGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+                () => LongPressGestureRecognizer(
+                  duration: const Duration(seconds: 2),
+                ),
+                (recognizer) =>
+                    recognizer.onLongPress = _saving || !_categoriesReady
+                    ? null
+                    : () => _deleteCategory(name),
+              ),
+        },
+        child: ChoiceChip(
+          label: Text(name),
+          selected: _category == name,
+          selectedColor: _green,
+          backgroundColor: colors.surface,
+          checkmarkColor: Colors.white,
+          labelStyle: TextStyle(
+            color: _category == name ? Colors.white : colors.onSurface,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          onSelected: _saving || !_categoriesReady
+              ? null
+              : (_) => setState(() {
+                  _category = name;
+                  _error = null;
+                }),
+        ),
+      ),
+    );
+  }
+
   final _amount = TextEditingController();
   final _note = TextEditingController();
   late TransactionType _type = widget.initialType;
   int _step = 0;
+  DateTime _date = DateUtils.dateOnly(DateTime.now());
+  DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   String? _category;
   String? _error;
   bool _saving = false;
@@ -54,20 +248,20 @@ class _AddNewPageState extends State<AddNewPage> {
     super.dispose();
   }
 
-  void _continue() {
+  Future<void> _save() async {
+    if (_saving) return;
     if (!_value.isFinite || _value <= 0) {
       setState(() => _error = 'Enter an amount greater than zero.');
       return;
     }
-    FocusScope.of(context).unfocus();
-    setState(() {
-      _step = 1;
-      _error = null;
-    });
-  }
-
-  Future<void> _save() async {
-    if (_saving || _category == null) return;
+    if (_category == null) {
+      setState(() => _error = 'Choose a category.');
+      return;
+    }
+    if (_date.isAfter(DateUtils.dateOnly(DateTime.now()))) {
+      setState(() => _error = 'Choose today or an earlier date.');
+      return;
+    }
     FocusScope.of(context).unfocus();
     setState(() {
       _saving = true;
@@ -79,11 +273,22 @@ class _AddNewPageState extends State<AddNewPage> {
       title: _note.text.trim().isEmpty ? _category! : _note.text.trim(),
       category: _category!,
       amount: _value,
-      date: now,
+      date: DateTime(
+        _date.year,
+        _date.month,
+        _date.day,
+        now.hour,
+        now.minute,
+        now.second,
+      ),
       type: _type,
     );
     try {
-      await (widget.onSave ?? TransactionService().add)(transaction);
+      if (widget.onSave != null) {
+        await widget.onSave!(transaction);
+      } else {
+        TransactionService().queue(transaction);
+      }
       if (!mounted) return;
       setState(() {
         _saved = transaction;
@@ -101,342 +306,226 @@ class _AddNewPageState extends State<AddNewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = _type == TransactionType.expense ? _expenses : _incomes;
+    final colors = Theme.of(context).colorScheme;
+    final income = _type == TransactionType.income;
+    final categories = _categories[_type]!;
+    final saved = _step == 2;
     return PopScope(
-      canPop: !_saving && _step != 1,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && !_saving) setState(() => _step = 0);
-      },
+      canPop: !_saving,
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: Text(
+            saved
+                ? 'Transaction saved'
+                : income
+                ? 'Add income'
+                : 'Add expense',
+          ),
           surfaceTintColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          leading: _step == 2
-              ? null
-              : IconButton(
-                  tooltip: 'Back',
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: _saving
-                      ? null
-                      : () {
-                          if (_step == 1) {
-                            setState(() => _step = 0);
-                          } else {
-                            Navigator.pop(context);
-                          }
-                        },
-                ),
+          automaticallyImplyLeading: !_saving,
         ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 480),
+              constraints: const BoxConstraints(maxWidth: 480),
               child: Column(
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            _step == 0
-                                ? 'Enter amount'
-                                : _step == 1
-                                ? 'Choose category'
-                                : 'Transaction saved',
-                            style: TextStyle(
-                              fontSize: 27,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            _step == 0
-                                ? 'How much did you spend or receive?'
-                                : _step == 1
-                                ? 'What was this transaction for?'
-                                : '${_money(_saved!.amount)} was added to ${_saved!.category}.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                              fontSize: 15,
-                            ),
-                          ),
-                          SizedBox(height: 24),
-                          if (_step == 0) ...[
-                            SizedBox(
-                              width: double.infinity,
-                              child: SegmentedButton<TransactionType>(
-                                segments: [
-                                  ButtonSegment(
-                                    value: TransactionType.expense,
-                                    icon: Icon(Icons.arrow_upward, size: 17),
-                                    label: Text('Expense'),
-                                  ),
-                                  ButtonSegment(
-                                    value: TransactionType.income,
-                                    icon: Icon(Icons.arrow_downward, size: 17),
-                                    label: Text('Income'),
-                                  ),
-                                ],
-                                selected: {_type},
-                                showSelectedIcon: false,
-                                style: SegmentedButton.styleFrom(
-                                  selectedBackgroundColor: AppColors.divider,
-                                  selectedForegroundColor: _green,
-                                ),
-                                onSelectionChanged: (selection) => setState(() {
-                                  _type = selection.first;
-                                  _category = null;
-                                }),
-                              ),
-                            ),
-                            SizedBox(height: 36),
-                            TextField(
-                              controller: _amount,
-                              autofocus: true,
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              inputFormatters: [
-                                TextInputFormatter.withFunction(
-                                  (oldValue, newValue) =>
-                                      RegExp(
-                                        r'^\d{0,10}(\.\d{0,2})?$',
-                                      ).hasMatch(newValue.text)
-                                      ? newValue
-                                      : oldValue,
-                                ),
-                              ],
-                              style: TextStyle(
-                                fontSize: 40,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: '0',
-                                suffixText: 'LKR',
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: _green,
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                              onChanged: (_) => setState(() => _error = null),
-                              onSubmitted: (_) => _continue(),
-                            ),
-                            SizedBox(height: 20),
-                            Wrap(
-                              spacing: 8,
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                      child: saved
+                          ? Column(
                               children: [
-                                for (final value in [1000, 5000, 10000])
-                                  ActionChip(
-                                    label: Text(
-                                      '+${NumberFormat('#,##0').format(value)}',
+                                const SizedBox(height: 32),
+                                const Icon(
+                                  Icons.check_circle_outline,
+                                  color: _green,
+                                  size: 64,
+                                ),
+                                const SizedBox(height: 24),
+                                Text(
+                                  _money(_saved!.amount),
+                                  style: const TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                _detail('Title', _saved!.title),
+                                _detail('Category', _saved!.category),
+                                _detail(
+                                  'Date',
+                                  DateFormat('d MMM yyyy').format(_saved!.date),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: SegmentedButton<TransactionType>(
+                                    segments: const [
+                                      ButtonSegment(
+                                        value: TransactionType.expense,
+                                        label: Text('Expense'),
+                                      ),
+                                      ButtonSegment(
+                                        value: TransactionType.income,
+                                        label: Text('Income'),
+                                      ),
+                                    ],
+                                    selected: {_type},
+                                    showSelectedIcon: false,
+                                    style: SegmentedButton.styleFrom(
+                                      selectedBackgroundColor: _green,
+                                      selectedForegroundColor: Colors.white,
+                                      minimumSize: const Size(48, 48),
                                     ),
-                                    onPressed: () => setState(() {
-                                      _amount.text = (_value + value)
-                                          .toStringAsFixed(2);
-                                      _error = null;
-                                    }),
+                                    onSelectionChanged: _saving
+                                        ? null
+                                        : (selection) => setState(() {
+                                            _type = selection.first;
+                                            _category = null;
+                                            _error = null;
+                                          }),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                _calendar(),
+                                const SizedBox(height: 24),
+                                _label(
+                                  income ? 'Income title' : 'Expense title',
+                                ),
+                                TextField(
+                                  controller: _note,
+                                  enabled: !_saving,
+                                  maxLength: 120,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  decoration: _input(
+                                    income
+                                        ? 'e.g. Side business'
+                                        : 'e.g. Groceries',
+                                  ).copyWith(counterText: ''),
+                                ),
+                                const SizedBox(height: 20),
+                                _label('Amount'),
+                                TextField(
+                                  controller: _amount,
+                                  enabled: !_saving,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
+                                  inputFormatters: [
+                                    TextInputFormatter.withFunction(
+                                      (oldValue, newValue) =>
+                                          RegExp(
+                                            r'^\d{0,10}(\.\d{0,2})?$',
+                                          ).hasMatch(newValue.text)
+                                          ? newValue
+                                          : oldValue,
+                                    ),
+                                  ],
+                                  decoration: _input(
+                                    '0.00',
+                                  ).copyWith(suffixText: 'LKR'),
+                                  onChanged: (_) =>
+                                      setState(() => _error = null),
+                                ),
+                                const SizedBox(height: 24),
+                                _label(
+                                  income
+                                      ? 'Income category'
+                                      : 'Expense category',
+                                ),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    SizedBox(
+                                      width: 52,
+                                      height: 52,
+                                      child: OutlinedButton(
+                                        onPressed: _saving || !_categoriesReady
+                                            ? null
+                                            : _addCategory,
+                                        style: OutlinedButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Semantics(
+                                          label: 'Add category',
+                                          child: Icon(Icons.add),
+                                        ),
+                                      ),
+                                    ),
+                                    for (final category in categories)
+                                      _categoryChip(category),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Hold a category for 2 seconds to delete it.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                ),
+                                if (_error != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 16),
+                                    child: Semantics(
+                                      liveRegion: true,
+                                      child: Text(
+                                        _error!,
+                                        style: TextStyle(color: colors.error),
+                                      ),
+                                    ),
                                   ),
                               ],
                             ),
-                          ],
-                          if (_step == 1) ...[
-                            for (final category in categories)
-                              Padding(
-                                padding: EdgeInsets.only(bottom: 8),
-                                child: Material(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    side: BorderSide(
-                                      color: _category == category.$1
-                                          ? _green
-                                          : Theme.of(
-                                              context,
-                                            ).colorScheme.outlineVariant,
-                                      width: _category == category.$1 ? 2 : 1,
-                                    ),
-                                  ),
-                                  child: ListTile(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    leading: Container(
-                                      width: 38,
-                                      height: 38,
-                                      decoration: BoxDecoration(
-                                        color: category.$3,
-                                        borderRadius: BorderRadius.circular(11),
-                                      ),
-                                      child: Icon(
-                                        category.$2,
-                                        color: Colors.white,
-                                        size: 22,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      category.$1,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    trailing: Icon(
-                                      _category == category.$1
-                                          ? Icons.check_circle
-                                          : Icons.circle_outlined,
-                                      color: _category == category.$1
-                                          ? _green
-                                          : AppColors.textMuted,
-                                    ),
-                                    onTap: _saving
-                                        ? null
-                                        : () => setState(
-                                            () => _category = category.$1,
-                                          ),
-                                  ),
-                                ),
-                              ),
-                            SizedBox(height: 12),
-                            TextField(
-                              controller: _note,
-                              enabled: !_saving,
-                              maxLength: 120,
-                              decoration: InputDecoration(
-                                labelText: 'Note (optional)',
-                                hintText: 'e.g. Lunch with team',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(14),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                          if (_step == 2) ...[
-                            SizedBox(height: 20),
-                            CircleAvatar(
-                              radius: 44,
-                              backgroundColor: AppColors.divider,
-                              child: Icon(Icons.check, size: 46, color: _green),
-                            ),
-                            SizedBox(height: 32),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.outlineVariant,
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Column(
-                                children: [
-                                  _detail(
-                                    'Amount',
-                                    '${_saved!.isIncome ? '+' : '−'}${_money(_saved!.amount)}',
-                                  ),
-                                  Divider(height: 1),
-                                  _detail('Category', _saved!.category),
-                                  if (_note.text.trim().isNotEmpty) ...[
-                                    Divider(height: 1),
-                                    _detail('Note', _note.text.trim()),
-                                  ],
-                                  Divider(height: 1),
-                                  _detail(
-                                    'Date',
-                                    'Today, ${DateFormat('d MMM yyyy').format(_saved!.date)}',
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          if (_error != null)
-                            Padding(
-                              padding: EdgeInsets.only(top: 16),
-                              child: Text(
-                                _error!,
-                                style: TextStyle(color: AppColors.expense),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                        ],
-                      ),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(24, 12, 24, 16),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: _green,
-                              foregroundColor: Colors.white,
-                            ),
-                            onPressed:
-                                _saving || _step == 1 && _category == null
-                                ? null
-                                : _step == 0
-                                ? _continue
-                                : _step == 1
-                                ? _save
-                                : () => Navigator.pop(context),
-                            child: _saving
-                                ? SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Text(
-                                    _step == 2 ? 'Done' : 'Continue',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _green,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(48, 52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        if (_step == 2)
-                          TextButton(
-                            onPressed: () => setState(() {
-                              _step = 0;
-                              _amount.clear();
-                              _note.clear();
-                              _category = null;
-                              _saved = null;
-                              _error = null;
-                            }),
-                            child: Text(
-                              'Add another transaction',
-                              style: TextStyle(
-                                color: _green,
-                                fontWeight: FontWeight.w600,
+                        onPressed: _saving
+                            ? null
+                            : saved
+                            ? () => Navigator.pop(context)
+                            : _save,
+                        child: _saving
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                saved
+                                    ? 'Done'
+                                    : income
+                                    ? 'Add income'
+                                    : 'Add expense',
                               ),
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -448,25 +537,154 @@ class _AddNewPageState extends State<AddNewPage> {
     );
   }
 
+  InputDecoration _input(String hint) {
+    final colors = Theme.of(context).colorScheme;
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: colors.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: colors.outline),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _green, width: 2),
+      ),
+    );
+  }
+
+  Widget _label(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(
+      text,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
+
+  Widget _calendar() {
+    final colors = Theme.of(context).colorScheme;
+    final today = DateUtils.dateOnly(DateTime.now());
+    final currentMonth = DateTime(today.year, today.month);
+    final offset = _month.weekday - 1;
+    final days = DateUtils.getDaysInMonth(_month.year, _month.month);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.outlineVariant),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                tooltip: 'Previous month',
+                onPressed: _saving || _month.year <= 1900 && _month.month == 1
+                    ? null
+                    : () => setState(
+                        () => _month = DateTime(_month.year, _month.month - 1),
+                      ),
+                icon: const Icon(Icons.chevron_left),
+              ),
+              Expanded(
+                child: Text(
+                  DateFormat('MMMM yyyy').format(_month),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Next month',
+                onPressed: _saving || !_month.isBefore(currentMonth)
+                    ? null
+                    : () => setState(
+                        () => _month = DateTime(_month.year, _month.month + 1),
+                      ),
+                icon: const Icon(Icons.chevron_right),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              for (final day in ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'])
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      day,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Each date retains a 48dp touch target, including on narrow screens.
+          for (var row = 0; row < ((offset + days) / 7).ceil(); row++)
+            Row(
+              children: [
+                for (var column = 0; column < 7; column++)
+                  Expanded(
+                    child: _dayCell(row * 7 + column - offset + 1, days, today),
+                  ),
+              ],
+            ),
+          const SizedBox(height: 8),
+          Text(
+            DateFormat('EEE, d MMM yyyy').format(_date),
+            style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dayCell(int day, int days, DateTime today) {
+    if (day < 1 || day > days) return const SizedBox(height: 48);
+    final date = DateTime(_month.year, _month.month, day);
+    final selected = DateUtils.isSameDay(_date, date);
+    return SizedBox(
+      height: 48,
+      child: TextButton(
+        onPressed: _saving || date.isAfter(today)
+            ? null
+            : () => setState(() => _date = date),
+        style: TextButton.styleFrom(
+          minimumSize: Size.zero,
+          padding: EdgeInsets.zero,
+          backgroundColor: selected ? _green : null,
+          foregroundColor: selected
+              ? Colors.white
+              : Theme.of(context).colorScheme.onSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: Semantics(
+          label: DateFormat('EEEE, d MMMM yyyy').format(date),
+          selected: selected,
+          child: ExcludeSemantics(child: Text('$day')),
+        ),
+      ),
+    );
+  }
+
   Widget _detail(String label, String value) => Padding(
-    padding: EdgeInsets.symmetric(vertical: 16),
+    padding: const EdgeInsets.symmetric(vertical: 16),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
+        Text(label),
+        const SizedBox(width: 16),
+        Expanded(child: Text(value, textAlign: TextAlign.right)),
       ],
     ),
   );

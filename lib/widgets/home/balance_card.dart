@@ -2,17 +2,23 @@ import 'package:expenz/constant/colors.dart';
 import 'package:expenz/constant/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:expenz/services/daily_budget_calculator.dart';
+import 'daily_budget_card.dart';
 
 class BalanceCard extends StatefulWidget {
   final double spentAmount;
   final double monthlyBudget;
   final VoidCallback? onArrowTap;
+  final DailyBudgetResult? daily;
+  final VoidCallback? onEditLimit;
 
   const BalanceCard({
     super.key,
-    required this.spentAmount,
-    required this.monthlyBudget,
+    this.spentAmount = 0,
+    this.monthlyBudget = 1,
     this.onArrowTap,
+    this.daily,
+    this.onEditLimit,
   }) : assert(monthlyBudget > 0);
 
   @override
@@ -47,6 +53,12 @@ class _BalanceCardState extends State<BalanceCard> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.daily != null) {
+      return DailyBudgetCard(
+        day: widget.daily!,
+        onEditLimit: widget.onEditLimit,
+      );
+    }
     final spent = widget.spentAmount.clamp(0.0, double.infinity).toDouble();
     final progress = (spent / widget.monthlyBudget).clamp(0.0, 1.0).toDouble();
     final progressColor = _progressColor(progress);

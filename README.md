@@ -35,6 +35,9 @@ and Crashlytics have not been added; the current app does not use those services
 
 ## Validation
 
+Daily targets, wallet savings, day settlement and balance correction are
+documented in [Daily budget guide](docs/daily-budget.md).
+
 ```sh
 flutter analyze
 flutter test

@@ -6,12 +6,206 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
+    function validDailyBudget() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['dailyLimit', 'dailyLimitStartDate'])
+        && data.dailyLimit is number
+        && data.dailyLimit >= 0
+        && data.dailyLimit <= 90071992547409
+        && data.dailyLimitStartDate is string
+        && data.dailyLimitStartDate.matches(
+          '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$'
+        );
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly([
+          'dailyLimit', 'dailyLimitStartDate'
+        ])
+        && validDailyBudget();
+
+      // Existing profile fields are preserved, but cannot be changed here.
+      // Keep the budget's original start date so past days cannot be invented.
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'dailyLimit', 'dailyLimitStartDate'
+        ])
+        && validDailyBudget()
+        && (!('dailyLimitStartDate' in resource.data)
+          || request.resource.data.dailyLimitStartDate
+            == resource.data.dailyLimitStartDate);
+    }
+
     match /users/{userId}/transactions/{transactionId} {
       allow read, write: if isOwner(userId);
     }
 
     match /users/{userId}/goals/{goalId} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().size() == 4
+        && request.resource.data.keys().hasOnly(['title', 'target', 'saved', 'createdAt'])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 60
+        && request.resource.data.target is number
+        && request.resource.data.target > 0
+        && request.resource.data.target <= 90071992547409
+        && request.resource.data.saved == 0
+        && (request.resource.data.createdAt is timestamp
+          || validSavingsTime(request.resource.data.createdAt));
+      // Funding is an immutable paired event, not an editable saved total.
+      allow update: if isOwner(userId) && request.resource.data == resource.data;
+    }
+
+    function validSettlementMoney(data) {
+      let m = data.amountsMinor;
+      return m.keys().size() == 10
+        && m.keys().hasOnly(['baseLimit', 'adjustedLimit', 'spent', 'leftover',
+          'overspent', 'walletChange', 'carriedBefore', 'carryAssigned',
+          'uncovered', 'carriedAfter'])
+        && m.baseLimit is int && m.baseLimit >= 0
+        && m.adjustedLimit is int && m.adjustedLimit >= 0
+        && m.spent is int && m.spent >= 0
+        && m.leftover is int && m.leftover >= 0
+        && m.overspent is int && m.overspent >= 0
+        && m.walletChange is int
+        && m.carriedBefore is int && m.carriedBefore >= 0
+        && m.carryAssigned is int && m.carryAssigned >= 0
+        && m.uncovered is int && m.uncovered >= 0
+        && m.carriedAfter is int && m.carriedAfter >= 0
+        && m.carryAssigned <= m.carriedBefore
+        && m.adjustedLimit == m.baseLimit - m.carryAssigned
+        && m.leftover == (m.adjustedLimit > m.spent ? m.adjustedLimit - m.spent : 0)
+        && m.overspent == (m.spent > m.adjustedLimit ? m.spent - m.adjustedLimit : 0)
+        && m.uncovered == m.overspent + (m.walletChange < 0 ? m.walletChange : 0)
+        && m.carriedAfter == m.carriedBefore - m.carryAssigned + m.uncovered
+        && data.baseLimit == m.baseLimit / 100.0
+        && data.adjustedLimit == m.adjustedLimit / 100.0
+        && data.spent == m.spent / 100.0
+        && data.leftover == m.leftover / 100.0
+        && data.overspent == m.overspent / 100.0
+        && data.walletChange == m.walletChange / 100.0
+        && data.carriedBefore == m.carriedBefore / 100.0
+        && data.carryAssigned == m.carryAssigned / 100.0
+        && data.uncovered == m.uncovered / 100.0
+        && data.carriedAfter == m.carriedAfter / 100.0;
+    }
+
+    function validSettlementAction(data) {
+      let m = data.amountsMinor;
+      return (data.action == 'savedToWallet' && m.leftover > 0
+          && m.walletChange == m.leftover)
+        || (data.action == 'coveredByWallet' && m.walletChange < 0
+          && -m.walletChange <= m.overspent)
+        || (data.action == 'carriedForward' && m.overspent > 0 && m.walletChange == 0)
+        || (data.action == 'none' && m.overspent == 0 && m.walletChange == 0);
+    }
+
+    function hasMatchingWallet(userId, dayId, change) {
+      let path = /databases/$(database)/documents/users/$(userId)/wallet_entries/$(dayId);
+      return change == 0 ? !existsAfter(path)
+        : getAfter(path).data.relatedDay == dayId
+          && getAfter(path).data.amountMinor == (change > 0 ? change : -change)
+          && getAfter(path).data.type == (change > 0 ? 'deposit' : 'withdraw');
+    }
+
+    match /users/{userId}/daily_settlements/{dayId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().size() == 13
+        && request.resource.data.keys().hasOnly(['date', 'baseLimit', 'adjustedLimit',
+          'spent', 'leftover', 'overspent', 'action', 'walletChange',
+          'carriedBefore', 'carryAssigned', 'uncovered', 'carriedAfter', 'amountsMinor'])
+        && request.resource.data.date == dayId
+        && dayId.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
+        && exists(/databases/$(database)/documents/users/$(userId))
+        && dayId >= get(/databases/$(database)/documents/users/$(userId)).data.dailyLimitStartDate
+        && validSettlementMoney(request.resource.data)
+        && validSettlementAction(request.resource.data)
+        && hasMatchingWallet(userId, dayId, request.resource.data.amountsMinor.walletChange);
+      // Identical retries are safe; a closed day's result cannot be changed.
+      allow update: if isOwner(userId) && request.resource.data == resource.data;
+    }
+
+    function validSavingsTime(value) {
+      return value is timestamp;
+    }
+
+    function validTransferMoney(data) {
+      return data.amountMinor is int && data.amountMinor > 0
+        && data.amount == data.amountMinor / 100.0
+        && validSavingsTime(data.date)
+        && data.relatedDay is string
+        && data.relatedDay.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
+    }
+
+    function validManualTopUp(data, entryId) {
+      return data.keys().size() == 6
+        && data.keys().hasOnly(['amount', 'amountMinor', 'type', 'date', 'relatedDay', 'source'])
+        && entryId.matches('^topup-[0-9]+-[0-9]+-[0-9]+$')
+        && data.source == 'manualTopUp' && data.type == 'deposit'
+        && validTransferMoney(data);
+    }
+
+    function validGoalWithdrawal(data, userId, entryId) {
+      let contribution = getAfter(/databases/$(database)/documents/users/$(userId)/goal_contributions/$(entryId)).data;
+      return data.keys().size() == 7
+        && data.keys().hasOnly(['amount', 'amountMinor', 'type', 'date', 'relatedDay', 'source', 'goalId'])
+        && entryId.matches('^goal-[0-9]+-[0-9]+-[0-9]+$')
+        && data.source == 'goalTransfer' && data.type == 'withdraw'
+        && validTransferMoney(data)
+        && data.goalId is string && data.goalId.size() > 0
+        && existsAfter(/databases/$(database)/documents/users/$(userId)/goals/$(data.goalId))
+        && contribution.goalId == data.goalId
+        && contribution.walletEntryId == entryId
+        && contribution.amountMinor == data.amountMinor
+        && contribution.date == data.date;
+    }
+
+    match /users/{userId}/wallet_entries/{dayId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && ((!('source' in request.resource.data)
+        && request.resource.data.keys().size() == 5
+        && request.resource.data.keys().hasOnly(['amount', 'amountMinor', 'type', 'date', 'relatedDay'])
+        && request.resource.data.amountMinor is int
+        && request.resource.data.amountMinor > 0
+        && request.resource.data.amount == request.resource.data.amountMinor / 100.0
+        && request.resource.data.date == dayId
+        && request.resource.data.relatedDay == dayId
+        && request.resource.data.type in ['deposit', 'withdraw']
+        && getAfter(/databases/$(database)/documents/users/$(userId)/daily_settlements/$(dayId))
+          .data.amountsMinor.walletChange == (request.resource.data.type == 'deposit'
+            ? request.resource.data.amountMinor : -request.resource.data.amountMinor))
+        || ('source' in request.resource.data
+          && (validManualTopUp(request.resource.data, dayId)
+            || validGoalWithdrawal(request.resource.data, userId, dayId))));
+      allow update: if isOwner(userId) && request.resource.data == resource.data;
+    }
+
+    match /users/{userId}/goal_contributions/{entryId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().size() == 5
+        && request.resource.data.keys().hasOnly(['goalId', 'walletEntryId', 'amount', 'amountMinor', 'date'])
+        && entryId.matches('^goal-[0-9]+-[0-9]+-[0-9]+$')
+        && request.resource.data.walletEntryId == entryId
+        && request.resource.data.goalId is string
+        && request.resource.data.amountMinor is int
+        && request.resource.data.amountMinor > 0
+        && request.resource.data.amount == request.resource.data.amountMinor / 100.0
+        && validSavingsTime(request.resource.data.date)
+        && existsAfter(/databases/$(database)/documents/users/$(userId)/goals/$(request.resource.data.goalId))
+        && getAfter(/databases/$(database)/documents/users/$(userId)/wallet_entries/$(entryId)).data.source == 'goalTransfer'
+        && getAfter(/databases/$(database)/documents/users/$(userId)/wallet_entries/$(entryId)).data.type == 'withdraw'
+        && getAfter(/databases/$(database)/documents/users/$(userId)/wallet_entries/$(entryId)).data.goalId == request.resource.data.goalId
+        && getAfter(/databases/$(database)/documents/users/$(userId)/wallet_entries/$(entryId)).data.amountMinor == request.resource.data.amountMinor
+        && getAfter(/databases/$(database)/documents/users/$(userId)/wallet_entries/$(entryId)).data.date == request.resource.data.date;
+      allow update: if isOwner(userId) && request.resource.data == resource.data;
     }
   }
 }

@@ -20,17 +20,25 @@ class QuickActionItem extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        InkWell(
-          onTap: onTap,
-          customBorder: CircleBorder(),
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.11),
-              shape: BoxShape.circle,
+        SizedBox(
+          width: 56,
+          height: 56,
+          child: OutlinedButton(
+            onPressed: onTap,
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.zero,
+              foregroundColor: color == AppColors.primary
+                  ? Theme.of(context).colorScheme.onSurface
+                  : color,
+              side: BorderSide(color: Theme.of(context).colorScheme.outline),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
-            child: Icon(icon, color: color, size: 26),
+            child: Semantics(
+              label: label,
+              child: ExcludeSemantics(child: Icon(icon, size: 24)),
+            ),
           ),
         ),
         SizedBox(height: 8),

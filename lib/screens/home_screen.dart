@@ -1,6 +1,6 @@
 import 'package:expenz/screens/goals_page.dart';
 import 'package:expenz/models/transaction_model.dart';
-import 'package:expenz/widgets/home/balance_card.dart';
+import 'package:expenz/widgets/home/budget_home_section.dart';
 import 'package:expenz/widgets/home/home_header.dart';
 import 'package:expenz/widgets/home/quick_actions_row.dart';
 import 'package:expenz/widgets/home/recent_transactions.dart';
@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 /// Each piece lives in its own file in widgets/home/.
 class HomeScreen extends StatelessWidget {
   final String userName;
+  final bool isActive;
   final List<TransactionModel> transactions;
   final VoidCallback? onAddExpense;
   final VoidCallback? onAddIncome;
@@ -19,6 +20,7 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
     this.userName = '',
+    this.isActive = true,
     this.transactions = const [],
     this.onAddExpense,
     this.onAddIncome,
@@ -29,16 +31,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final spentThisMonth = transactions
-        .where(
-          (transaction) =>
-              !transaction.isIncome &&
-              transaction.date.year == now.year &&
-              transaction.date.month == now.month,
-        )
-        .fold<double>(0, (total, transaction) => total + transaction.amount);
-
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
@@ -49,7 +41,7 @@ class HomeScreen extends StatelessWidget {
             HomeHeader(userName: userName, hasNotification: true),
             SizedBox(height: 24),
 
-            BalanceCard(spentAmount: spentThisMonth, monthlyBudget: 500000),
+            BudgetHomeSection(isActive: isActive),
             SizedBox(height: 24),
 
             // Step 6: quick actions

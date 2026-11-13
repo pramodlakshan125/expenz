@@ -60,10 +60,14 @@ class AppColors {
   ); // White text for primary buttons
 
   // ---------------------------------------------------------------------------
-  // 6. Optional Dark Mode Colors
+  // 6. Night mode: warm charcoal, paper-like text, and muted sage.
   // ---------------------------------------------------------------------------
-  static const Color darkBackground = Color(
-    0xFF000000,
-  ); // Pure black background
-  static const Color darkCardSurface = Color(0xFF1E293B); // Navy Slate Surface
+  static const Color darkBackground = Color(0xFF181A18);
+  static const Color darkCardSurface = Color(0xFF222521);
+  static const Color darkRaisedSurface = Color(0xFF2C302B);
+  static const Color darkText = Color(0xFFE9E8DF);
+  static const Color darkTextSecondary = Color(0xFFB8BDB2);
+  static const Color darkOutline = Color(0xFF7D8779);
+  static const Color darkDivider = Color(0xFF41483E);
+  static const Color darkAccent = Color(0xFFA3B998);
 }
